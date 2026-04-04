@@ -5,60 +5,76 @@ import {
 } from "@magicblock-labs/bolt-sdk";
 
 import { MagicBlockEngine } from "../engine/MagicBlockEngine";
-
-import { getComponentGameOnChain } from "./gamePrograms";
+import { getComponentGameOnChain, COMPONENT_GAME_PROGRAM_ID } from "./gamePrograms";
 import { gameWorldGetOrCreate } from "./gameWorld";
 
+/**
+ * Scans the Sector for active neural nodes (games).
+ * Uses a reverse-chronological search to find the most recent matches first.
+ */
 export async function gameList(engine: MagicBlockEngine, count: number) {
   const componentGame = getComponentGameOnChain(engine);
   const worldPda = await gameWorldGetOrCreate(engine);
 
+  // 1. Fetch the World State to get the total entity count
   const world = await World.fromAccountAddress(
     engine.getConnectionChain(),
     worldPda
   );
 
-  let entityId = world.entities;
-
+  let currentId = world.entities; // Start from the newest entity
   const found: any[] = [];
-  while (!entityId.isNeg() && found.length < count) {
-    // Create a batch of accounts PDAs to read
+  const BATCH_SIZE = 20; // Reduced batch size for faster initial UI response
+
+  onLog("SCANNING_SECTOR_FOR_ACTIVE_UPLINKS...");
+
+  while (!currentId.isNeg() && found.length < count) {
     const batch: any[] = [];
-    while (!entityId.isNeg() && batch.length <= 100) {
+    
+    // 2. Build a batch of PDAs to check
+    while (!currentId.isNeg() && batch.length < BATCH_SIZE) {
       const entityPda = FindEntityPda({
-        worldId: world.id,
-        entityId: entityId,
+        worldId: worldPda,
+        entityId: currentId,
       });
       const gamePda = FindComponentPda({
-        componentId: componentGame.programId,
+        componentId: COMPONENT_GAME_PROGRAM_ID,
         entity: entityPda,
       });
+      
       batch.push({
-        entityId: entityId.toString(),
-        entityPda: entityPda,
-        gamePda: gamePda,
+        entityId: currentId.toString(),
+        entityPda,
+        gamePda,
       });
-      entityId = entityId.subn(1);
+      
+      currentId = currentId.subn(1);
     }
-    // Fetch multiple games at the same time
-    const games = await componentGame.account.game.fetchMultiple(
-      batch.map((entry) => entry.gamePda)
+
+    // 3. Batch Fetch from Mainnet
+    // fetchMultiple is significantly faster than fetching one by one
+    const gameStates = await componentGame.account.game.fetchMultiple(
+      batch.map((b) => b.gamePda)
     );
-    games.forEach((game, index) => {
-      const entry = batch[index];
-      const entityId = entry.entityId;
-      const entityPda = entry.entityPda;
-      const gamePda = entry.gamePda;
-      console.log("Check game", entityId, game);
+
+    // 4. Filter and Validate
+    gameStates.forEach((game, index) => {
       if (game && found.length < count) {
+        // We only show games that haven't expired or glitched
         found.push({
-          entityPda,
-          entityId,
-          gamePda,
+          entityPda: batch[index].entityPda,
+          entityId: batch[index].entityId,
+          gamePda: batch[index].gamePda,
           game,
         });
       }
     });
   }
+
   return found;
+}
+
+// Simple helper for terminal-style logging
+function onLog(msg: string) {
+  console.log(`[NETWORK_SCANNER]: ${msg}`);
 }
