@@ -1,2 +1,6 @@
-[project]
-name = "solana-generals"
+echo '[project]
+name = "cyberpunk-insurgency"
+
+[programs]
+movement = "HE8f4rE5s1oW4tS2vE1rS8iOn1D"
+' > bolt.toml
