@@ -1,38 +1,40 @@
 use bolt_lang::*;
-use crate::*;
+use game::Game;
+use game::GameStatus;
+use game::GameError;
 
 declare_id!("Cu8JkUA9a5msGWNChAuhBJ9PTE6FdevwHNgPyxbABkUL");
 
 #[system]
-pub struct Start {
-    pub fn execute(ctx: Context<Components>) -> Result<()> {
+pub mod start {
+    pub fn execute(ctx: Context<Components>) -> Result<Components> {
         let game = &mut ctx.accounts.game;
 
-        // 1. Check Status: Can only start if we are in the Lobby
+        // 1. Correct Status Check: Must be in Lobby to start
         if game.status != GameStatus::Lobby {
-            // Using a generic error if GameError::StatusIsNotLobby isn't in scope
-            return Err(GameError::StatusIsNotPlaying.into()); 
+            return Err(GameError::StatusIsNotLobby.into());
         }
 
-        // 2. Check Readiness: Ensure all players are ready to begin
+        // 2. Player Readiness Check
         for player in game.players.iter() {
-            if !player.ready {
-                return Err(GameError::ActionTooFast.into()); // Replace with PlayerNotReady if defined
+            if player.authority != Pubkey::default() && !player.ready {
+                // If a player has joined but isn't marked as ready
+                return Err(GameError::ActionTooFast.into()); 
             }
         }
 
-        // 3. Initialize the Heartbeat: Set the first tick to the current slot
+        // 3. Initialize the Heartbeat
         game.tick_next_slot = Clock::get()?.slot;
 
-        // 4. Update Status: The match is now live
+        // 4. Update Status to Live
         game.status = GameStatus::Playing;
 
-        Ok(())
+        // BOLT systems must return the updated components
+        Ok(ctx.accounts)
     }
-}
 
-#[derive(Accounts)]
-pub struct Components<'info> {
-    #[account(mut)]
-    pub game: Account<'info, Game>,
+    #[system_input]
+    pub struct Components {
+        pub game: Game,
+    }
 }
