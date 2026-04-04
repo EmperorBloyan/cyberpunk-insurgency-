@@ -1,10 +1,60 @@
 .GameGridRows {
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  perspective: 1000px; // Adds 3D depth to the grid
+  padding: 20px;
+
   > .Rows {
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(0, 255, 157, 0.2); // Neon Green tint to match "You"
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 255, 157, 0.05);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+
+    // The "Cyber Grid" Scanline Effect
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        rgba(18, 16, 16, 0) 50%, 
+        rgba(0, 0, 0, 0.1) 50%
+      ), linear-gradient(
+        90deg, 
+        rgba(255, 0, 0, 0.02), 
+        rgba(0, 255, 0, 0.01), 
+        rgba(0, 0, 255, 0.02)
+      );
+      background-size: 100% 4px, 3px 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+
     > .Row {
+      display: flex;
       flex-direction: row;
       flex-wrap: nowrap;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+
+      &:last-child {
+        border-bottom: none;
+      }
     }
   }
+}
+
+// Added a subtle floating animation to the entire grid
+@keyframes arena-float {
+  0% { transform: rotateX(2deg) translateY(0px); }
+  50% { transform: rotateX(4deg) translateY(-5px); }
+  100% { transform: rotateX(2deg) translateY(0px); }
+}
+
+.Rows {
+  animation: arena-float 6s ease-in-out infinite;
 }
