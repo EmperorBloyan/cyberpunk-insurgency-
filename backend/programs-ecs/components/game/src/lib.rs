@@ -1,9 +1,27 @@
 use bolt_lang::*;
 
-// 1. REGISTER THE SYSTEM MODULE
+// REGISTER THE SYSTEMS
 pub mod powerup_spawn;
+pub mod shadow_record;
 
 declare_id!("C5iL81s4Fu6SnkQEfixFZpKPRQ32fqVizpotoLVTxA2n");
+
+// ---------------------------------------------------------
+// 1. GLOBAL COMPONENTS (Persistent across matches)
+// ---------------------------------------------------------
+
+#[component(delegate)]
+pub struct ChampionShadow {
+    pub authority: Pubkey,
+    pub moves: [u8; 256], // Move history (0:Up, 1:Down, 2:Left, 3:Right)
+    pub total_moves: u32,
+    pub win_count: u32,
+    pub timestamp: i64,
+}
+
+// ---------------------------------------------------------
+// 2. MATCH COMPONENTS (Deleted when game ends)
+// ---------------------------------------------------------
 
 #[component(delegate)]
 pub struct Game {
@@ -29,17 +47,18 @@ pub enum GameStatus {
 pub struct GamePlayer {
     pub ready: bool,
     pub authority: Pubkey,
+    pub health: u8,        // Added Health for Brawler mechanics
+    pub attack_power: u8,  // Added for Power-Up scaling
     pub last_action_slot: u64,
 }
 
-// 2. MERGED GAME CELL (Including Loot & Player logic)
 #[component_deserialize]
 #[derive(PartialEq)]
 pub struct GameCell {
     pub kind: GameCellKind,
     pub owner: GameCellOwner,
     pub strength: u8,
-    pub occupant: Option<u8>, // 0 for Health, 1 for Attack (Loot)
+    pub occupant: Option<u8>, // 0: HealthPack, 1: AttackBoost
 }
 
 #[component_deserialize]
@@ -59,26 +78,34 @@ pub enum GameCellOwner {
     Nobody,
 }
 
-#[component_deserialize]
-#[derive(PartialEq, Default)]
-pub struct PowerUp {
-    pub p_type: u8, 
-    pub value: u64,
-}
+// ---------------------------------------------------------
+// 3. INITIALIZATION & UTILITIES
+// ---------------------------------------------------------
 
-/**
- * The initial state of the component when initialized
- */
 impl Default for Game {
     fn default() -> Self {
         Self::new(GameInit {
             status: GameStatus::Generate,
             size_x: 16,
             size_y: 8,
-            players: [GamePlayer::default(); 2],
+            players: [
+                GamePlayer { health: 100, attack_power: 10, ..Default::default() },
+                GamePlayer { health: 100, attack_power: 10, ..Default::default() }
+            ],
             cells: [GameCell::field(); 128],
             tick_next_slot: 0,
         })
+    }
+}
+
+impl GameCell {
+    pub fn field() -> GameCell {
+        GameCell {
+            kind: GameCellKind::Field,
+            owner: GameCellOwner::Nobody,
+            strength: 0,
+            occupant: None,
+        }
     }
 }
 
@@ -89,80 +116,14 @@ impl Game {
         }
         Ok(usize::from(y) * usize::from(self.size_x) + usize::from(x))
     }
-    pub fn get_cell(&self, x: u8, y: u8) -> Result<&GameCell> {
-        Ok(&self.cells[self.compute_index(x, y)?])
-    }
-    pub fn set_cell(&mut self, x: u8, y: u8, cell: GameCell) -> Result<()> {
-        self.cells[self.compute_index(x, y)?] = cell;
-        Ok(())
-    }
-}
-
-impl GameCell {
-    pub fn field() -> GameCell {
-        GameCell {
-            kind: GameCellKind::Field,
-            owner: GameCellOwner::Nobody,
-            strength: 0,
-            occupant: None, // Initialized as empty
-        }
-    }
-    pub fn city() -> GameCell {
-        GameCell {
-            kind: GameCellKind::City,
-            owner: GameCellOwner::Nobody,
-            strength: 40,
-            occupant: None,
-        }
-    }
-    pub fn capital(player_slot: u8) -> GameCell {
-        GameCell {
-            kind: GameCellKind::Capital,
-            owner: GameCellOwner::Player(player_slot),
-            strength: 20,
-            occupant: None,
-        }
-    }
-    pub fn mountain() -> GameCell {
-        GameCell {
-            kind: GameCellKind::Mountain,
-            owner: GameCellOwner::Nobody,
-            strength: 0,
-            occupant: None,
-        }
-    }
-    pub fn forest() -> GameCell {
-        GameCell {
-            kind: GameCellKind::Forest,
-            owner: GameCellOwner::Nobody,
-            strength: 0,
-            occupant: None,
-        }
-    }
 }
 
 #[error_code]
 pub enum GameError {
-    #[msg("The game status is not currently set to Generate.")]
-    StatusIsNotGenerate,
-    #[msg("The game status is not currently set to Lobby.")]
-    StatusIsNotLobby,
     #[msg("The game status is not currently set to Playing.")]
     StatusIsNotPlaying,
-    #[msg("A player already joined in this slot.")]
-    PlayerAlreadyJoined,
-    #[msg("The player in this slot doesn't match the payer")]
-    PlayerIsNotPayer,
-    #[msg("The player in this slot is not ready to start")]
-    PlayerIsNotReady,
     #[msg("The cell's position is out of bounds")]
     CellIsOutOfBounds,
-    #[msg("The cells specified are not adjacent")]
-    CellsAreNotAdjacent,
-    #[msg("The cell's strength is insufficient")]
-    CellStrengthIsInsufficient,
-    #[msg("The cell is not owned by the player")]
-    CellIsNotOwnedByPlayer,
     #[msg("The cell cannot be interacted with")]
     CellIsNotWalkable,
 }
