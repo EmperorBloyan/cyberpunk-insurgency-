@@ -91,6 +91,24 @@ export function GamePlayMap({
       setActivity({ x: -1, y: -1 });
     }
   };
+// 1. Create a state to hold the text
+const [powerUpText, setPowerUpText] = React.useState<string | null>(null);
+
+// 2. Use a React Effect to watch the 'game' object for changes
+React.useEffect(() => {
+  // Check if the on-chain state shows a new power-up was just dropped
+  // This 'lastPowerUpId' would come from your Bolt Component
+  if (game.powerUps?.lastPowerUpId) {
+    const messages = ["SHADOW HASTE", "VOID SHIELD", "CRANK OVERLOAD", "GHOST PROTOCOL"];
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+    
+    setPowerUpText(randomMessage);
+
+    // Remove the text after 2.5 seconds
+    const timer = setTimeout(() => setPowerUpText(null), 2500);
+    return () => clearTimeout(timer);
+  }
+}, [game.powerUps?.lastPowerUpId]); // This triggers whenever the ID changes on-chain
 
   return (
     <div className="relative overflow-hidden rounded-xl border-4 border-slate-800 shadow-2xl bg-black">
