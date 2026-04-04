@@ -1,18 +1,22 @@
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
-import { MagicBlockEngine } from "../engine/MagicBlockEngine"; // Adjust path if needed
+// Path updated: Now pointing to the engine folder in the same directory
+import { MagicBlockEngine } from "./engine/MagicBlockEngineProvider"; 
+import * as fs from 'fs';
+import * as path from 'path';
 
 async function seedGenesisShadow() {
-    // 1. Connect to your local or MagicBlock Devnet validator
+    // 1. Setup Connection (Update if using MagicBlock Devnet URL)
     const connection = new Connection("http://127.0.0.1:8899", "confirmed");
     
-    // 2. Use your FileSystem wallet (usually ~/.config/solana/id.json)
-    const admin = Keypair.fromSecretKey(
-        Uint8Array.from(JSON.parse(require('fs').readFileSync('/path/to/your/id.json', 'utf-8')))
-    );
+    // 2. Load your local Solana wallet
+    // Replace 'id.json' with your actual wallet filename if different
+    const walletPath = path.resolve(process.env.HOME || process.env.USERPROFILE, ".config/solana/id.json");
+    const secretKey = Uint8Array.from(JSON.parse(fs.readFileSync(walletPath, "utf-8")));
+    const admin = Keypair.fromSecretKey(secretKey);
 
     const engine = new MagicBlockEngine(connection, admin);
 
-    // 3. YOUR ACTUAL PROGRAM ID (From your lib.rs)
+    // 3. YOUR PROGRAM ID (Double check this matches your lib.rs)
     const PROGRAM_ID = new PublicKey("C5iL81s4Fu6SnkQEfixFZpKPRQ32fqVizpotoLVTxA2n");
 
     // 4. Derive the PDA for the ChampionShadow
@@ -21,28 +25,33 @@ async function seedGenesisShadow() {
         PROGRAM_ID
     );
 
-    console.log("🌱 INITIALIZING GENESIS SHADOW AT:", championPda.toBase58());
+    console.log("-----------------------------------------");
+    console.log("🌱 ARENA INITIALIZATION SEQUENCE STARTING");
+    console.log("📍 PDA:", championPda.toBase58());
+    console.log("-----------------------------------------");
 
-    // 5. Create the "Dummy" Move Set
-    // We fill the 256-slot array with a simple circular movement pattern
+    // 5. Create the "Genesis" Move Set (A simple 4-step loop)
     const genesisMoves = new Uint8Array(256);
     for (let i = 0; i < 256; i++) {
-        genesisMoves[i] = i % 4; // Cycles through 0, 1, 2, 3 (Up, Right, Down, Left)
+        genesisMoves[i] = i % 4; // 0:Up, 1:Right, 2:Down, 3:Left
     }
 
     try {
-        // 6. Push to Blockchain
+        // 6. Push the Data to the Rollup/Blockchain
+        // We initialize the shadow with 1 win to set the baseline
         await engine.updateComponent(championPda, {
+            authority: admin.publicKey,
             moves: Array.from(genesisMoves),
             totalMoves: 256,
             winCount: 1,
-            authority: admin.publicKey,
             timestamp: Math.floor(Date.now() / 1000)
         });
         
-        console.log("✅ GENESIS SHADOW IS LIVE. THE ARENA HAS A SOUL.");
+        console.log("✅ SUCCESS: The First Ghost has been summoned.");
+        console.log("🔥 The Arena is now ready for challengers.");
     } catch (err) {
-        console.error("❌ FAILED TO SEED:", err);
+        console.error("❌ SEEDING FAILED:", err);
+        console.log("💡 Tip: Make sure your 'bolt deploy' was successful first.");
     }
 }
 
