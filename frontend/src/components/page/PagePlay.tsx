@@ -41,7 +41,7 @@ export function PagePlay() {
   if (game === null) {
     return (
       <div className="Container Centered">
-        <GameError message="Unable to fetch the game data" />
+        <GameError message="Unable to fetch the Shadow Arena data" />
       </div>
     );
   }
@@ -49,10 +49,12 @@ export function PagePlay() {
   // Render the game
   return (
     <div className="Container Centered">
-      <Text value={"Game: " + entityPda.toBase58()} isTitle={true} />
+      <Text value="Blitz Brawler: Shadow Arena" isTitle={true} />
+      <Text value="Fight the Ghost • Survive the Shrinking Ring" />
+
       {(() => {
         if (game === undefined) {
-          return <></>; // Loading
+          return <Text value="Loading arena..." />;
         }
         if (game.status.generate || game.status.lobby) {
           return (
@@ -68,6 +70,7 @@ export function PagePlay() {
             <GamePlayRoot entityPda={entityPda} gamePda={gamePda} game={game} />
           );
         }
+        return <Text value="Unknown arena state" />;
       })()}
     </div>
   );
