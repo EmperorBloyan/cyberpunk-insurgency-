@@ -11,24 +11,36 @@ export function gameListen(
   setGame: (game: any) => void
 ) {
   const onGameValue = (gameData: any) => {
-    // Log game info
+    // Log game info for debugging
     gameLog(gamePda, gameData);
-    // Update state
+    // Update the React state
     setGame(gameData);
   };
+
   return engine.subscribeToEphemAccountInfo(gamePda, (accountInfo) => {
-    // If the game doesn't exist in the ephemeral
+    // 1. If the game doesn't exist in the ephemeral layer yet
     if (!accountInfo) {
-      // try to nudge it to be downloaded into the ephemeral validator if it exists on chain
+      console.log("Game not found on Ephemeral layer, nudging Generate system...");
+      // Try to pull it from the base layer into the high-speed layer
       gameSystemGenerate(engine, entityPda).then(
-        (value) => console.log("nudge generate success", value),
-        (reason) => console.log("nudge generate fail", reason.toString())
+        (value) => console.log("Nudge generate success", value),
+        (reason) => console.log("Nudge generate fail", reason.toString())
       );
-      // Display an error for now
       return onGameValue(null);
     }
-    // If we found the game, decode its state
-    const coder = getComponentGameOnEphem(engine).coder;
-    return onGameValue(coder.accounts.decode("game", accountInfo.data));
+
+    // 2. DECODER FIX: BOLT components are usually registered with Capitalized names
+    try {
+      const component = getComponentGameOnEphem(engine);
+      const coder = component.coder;
+      
+      // Changed "game" to "Game" to match your Rust #[component] Game
+      const decodedData = coder.accounts.decode("Game", accountInfo.data);
+      
+      return onGameValue(decodedData);
+    } catch (error) {
+      console.error("Failed to decode Game component data:", error);
+      return onGameValue(null);
+    }
   });
 }
