@@ -1,72 +1,68 @@
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
-
-// ADJUSTED PATHS: Pointing to your programs-ecs folder
 import { MagicBlockEngine } from "./programs-ecs/engine/MagicBlockEngine"; 
 import { gameFetch } from "./programs-ecs/states/gameFetch";
 import { gameSystemTick } from "./programs-ecs/states/gameSystemTick";
 import { gameSystemFinish } from "./programs-ecs/states/gameSystemFinish";
 
+// NEW: Import the Shadow Recording system
+import { shadowRecordSystem } from "./programs-ecs/systems/shadowRecordSystem";
+
 async function runCrank() {
-  // 1. Connection Setup
-  // Use "http://127.0.0.1:8899" for local validator or your Devnet RPC URL
   const connection = new Connection("http://127.0.0.1:8899", "confirmed");
   
-  // 2. Setup the "Arena Master" Keypair
-  // This is the key that will pay for the Ghost's transaction fees.
-  // For testing, we generate a random one, but in production, you'd load a fixed key.
+  // Setup the Authority (Ensure this key has SOL if on Devnet)
   const adminKeypair = Keypair.generate(); 
   const engine = new MagicBlockEngine(connection, adminKeypair);
 
-  console.log("------------------------------------------");
-  console.log("⚔️  BLITZ BRAWLER: SHADOW ARENA CRANK  ⚔️");
-  console.log("------------------------------------------");
-
-  // 3. Get the Match ID from the command line
   const entityPdaStr = process.argv[2];
   if (!entityPdaStr) {
-    console.error("❌ ERROR: Missing Entity PDA.");
-    console.log("Usage: npx ts-node crank.ts <YOUR_ENTITY_PDA>");
+    console.error("❌ ERROR: Match PDA required. Usage: npx ts-node crank.ts <PDA>");
     return;
   }
   const entityPda = new PublicKey(entityPdaStr);
 
-  console.log(`📡 Monitoring Arena: ${entityPda.toBase58()}`);
+  console.log("⚡ SHADOW ARENA CRANK: ONLINE");
+  console.log(`🏟️  Monitoring Arena: ${entityPda.toBase58()}`);
 
-  // 4. THE ENGINE LOOP
   while (true) {
     try {
-      // Fetch the latest state from the MagicBlock Rollup
       const game = await gameFetch(engine, entityPda);
 
       if (!game) {
-        console.log("⌛ Arena not found. Waiting...");
-        await sleep(3000);
+        await sleep(2000);
         continue;
       }
 
+      // --- 1. ACTIVE COMBAT LOOP ---
       if (game.status.playing) {
-        console.log(`[Slot: ${game.tickNextSlot}] -> Processing Shadow Tick...`);
+        console.log(`⚔️ Tick ${game.tickNextSlot}: Moving Ghost & Shrinking Ring...`);
         
-        // This triggers the Ghost's movement and the Poison Ring's shrinkage
+        // Execute the game tick (Ghost AI + Poison Ring)
         await gameSystemTick(engine, entityPda);
 
-        // Check for Win/Loss conditions (Health = 0 or Player outside Ring)
-        await gameSystemFinish(engine, entityPda, 0); // Check Human
-        await gameSystemFinish(engine, entityPda, 1); // Check Ghost
+        // Check if the Human (0) or Ghost (1) has been defeated
+        await gameSystemFinish(engine, entityPda, 0);
+        await gameSystemFinish(engine, entityPda, 1);
       }
 
+      // --- 2. FINAL BLOW & SHADOW RECORDING ---
       if (game.status.finished) {
-        console.log("🏆 MATCH OVER: Shadow Arena has closed.");
-        break; 
+        console.log("🏁 MATCH FINISHED. ANALYZING WINNER...");
+
+        // Trigger the Shadow Record system we defined in lib.rs
+        // This saves the Human's moves if they won.
+        await shadowRecordSystem(engine, entityPda);
+
+        console.log("🏆 SHADOW SAVED. TERMINATING CRANK.");
+        break; // Stop the crank once the recording is done
       }
 
     } catch (err) {
-      // MagicBlock is fast—if a transaction fails, we just try again on the next slot
-      console.warn("⚠️  Syncing... (Network Busy)");
+      // Ephemeral rollups move fast; ignore minor sync errors
+      process.stdout.write("."); 
     }
 
-    // Tick Speed: 1000ms (1 second) matches our UI transition speed
-    await sleep(1000);
+    await sleep(1000); // 1-second heartbeat
   }
 }
 
@@ -74,6 +70,4 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-runCrank().catch((err) => {
-  console.error("❌ CRANK FATAL ERROR:", err);
-});
+runCrank().catch(console.error);
