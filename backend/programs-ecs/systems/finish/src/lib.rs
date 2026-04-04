@@ -1,52 +1,46 @@
 use bolt_lang::*;
-use game::Game;
-use game::GameCellOwner;
-use game::GameError;
-use game::GameStatus;
+use crate::*;
 
 declare_id!("HBdGPJycpHjjJ149T3RQGtQWjSC39MVpcKYF6JJvaF6e");
 
 #[system]
-pub mod finish {
-
-    pub fn execute(ctx: Context<Components>, args: Args) -> Result<Components> {
+pub struct Finish {
+    pub fn execute(ctx: Context<Components>, player_index: u8) -> Result<()> {
         let game = &mut ctx.accounts.game;
 
-        // Can only finish the game when it's currently running
+        // 1. Status Check: Can only finish if the game is currently live
         if game.status != GameStatus::Playing {
             return Err(GameError::StatusIsNotPlaying.into());
         }
 
-        // The standard win condition is when a user is the last one standing
-        let mut finished = true;
-        for x in 0..game.size_x {
-            for y in 0..game.size_y {
-                let cell = game.get_cell(x, y)?;
-                let anyone_else = match cell.owner {
-                    GameCellOwner::Player(player_index) => player_index != args.player_index,
-                    GameCellOwner::Nobody => false,
-                };
-                if anyone_else {
-                    finished = false;
-                }
+        // 2. Win Condition Logic: 
+        // We assume the player wins if no other player owns any cells on the 16x8 grid.
+        let mut anyone_else_exists = false;
+
+        for i in 0..128 {
+            let cell = &game.cells[i];
+            match cell.owner {
+                GameCellOwner::Player(owner_idx) => {
+                    if owner_idx != player_index {
+                        anyone_else_exists = true;
+                        break; // Stop early to save Compute Units (CU)
+                    }
+                },
+                GameCellOwner::Nobody => {}
             }
         }
 
-        // Mark game finished only if didnt find anything against it
-        if finished {
+        // 3. Mark Finish: If no other owners were found, the match ends
+        if !anyone_else_exists {
             game.status = GameStatus::Finished;
         }
 
-        Ok(ctx.accounts)
+        Ok(())
     }
+}
 
-    #[system_input]
-    pub struct Components {
-        pub game: Game,
-    }
-
-    #[arguments]
-    struct Args {
-        player_index: u8,
-    }
+#[derive(Accounts)]
+pub struct Components<'info> {
+    #[account(mut)]
+    pub game: Account<'info, Game>,
 }
