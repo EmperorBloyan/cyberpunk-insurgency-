@@ -27,38 +27,32 @@ export function PageHome() {
   return (
     <div className="Container Centered">
       <Text value="Blitz Brawler" isTitle={true} />
+      
       <Button
-        text="+ Create a new game +"
+        text="+ Create New Blitz Brawler Match +"
         onClick={() => {
           navigate("/create");
         }}
       />
+      
       <ForEach<any>
         values={entries}
-        before={() => <Text value="Latest games" isTitle={true} />}
+        before={() => <Text value="Latest Blitz Brawler Matches" isTitle={true} />}
         renderer={(entry) => {
           const status = entry.game.status;
           const code = entry.entityPda.toBase58();
           const num = entry.entityId.toString().padStart(8, "0");
 
-          let indicator = "?";
-          if (status.generate) {
-            indicator = "🥚";
-          }
-          if (status.lobby) {
-            indicator = "⏳";
-          }
-          if (status.playing) {
-            indicator = "🪄";
-          }
-          if (status.finished) {
-            indicator = "☠️";
-          }
+          let indicator = "⚔️";
+          if (status.generate) indicator = "🥚";
+          if (status.lobby) indicator = "⏳";
+          if (status.playing) indicator = "🔥";
+          if (status.finished) indicator = "🏆";
 
           return (
             <Button
               key={code}
-              text={indicator + " Game " + code + " (#" + num + ")"}
+              text={indicator + " Match " + num + " • " + code.slice(0, 8) + "..."}
               isSoft={true}
               onClick={() => {
                 navigate("/play/" + code);
