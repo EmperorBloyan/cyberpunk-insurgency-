@@ -3,24 +3,25 @@ use bolt_lang::*;
 // REGISTER THE SYSTEMS
 pub mod powerup_spawn;
 pub mod shadow_record;
+pub mod match_cleanup;
 
 declare_id!("C5iL81s4Fu6SnkQEfixFZpKPRQ32fqVizpotoLVTxA2n");
 
 // ---------------------------------------------------------
-// 1. GLOBAL COMPONENTS (Persistent across matches)
+// 1. GLOBAL COMPONENTS (Persistent Across Matches)
 // ---------------------------------------------------------
 
 #[component(delegate)]
 pub struct ChampionShadow {
     pub authority: Pubkey,
-    pub moves: [u8; 256], // Move history (0:Up, 1:Down, 2:Left, 3:Right)
+    pub moves: [u8; 256],      // Recorded move history
     pub total_moves: u32,
     pub win_count: u32,
     pub timestamp: i64,
 }
 
 // ---------------------------------------------------------
-// 2. MATCH COMPONENTS (Deleted when game ends)
+// 2. MATCH COMPONENTS (Ephemeral/Temporary)
 // ---------------------------------------------------------
 
 #[component(delegate)]
@@ -47,9 +48,9 @@ pub enum GameStatus {
 pub struct GamePlayer {
     pub ready: bool,
     pub authority: Pubkey,
-    pub health: u8,        // Added Health for Brawler mechanics
-    pub attack_power: u8,  // Added for Power-Up scaling
-    pub last_action_slot: u64,
+    pub health: u8,
+    pub attack_power: u8,
+    pub last_action_slot: u64, // Used for Rate Limiting
 }
 
 #[component_deserialize]
@@ -58,28 +59,51 @@ pub struct GameCell {
     pub kind: GameCellKind,
     pub owner: GameCellOwner,
     pub strength: u8,
-    pub occupant: Option<u8>, // 0: HealthPack, 1: AttackBoost
+    pub occupant: Option<u8>, // 0: Health, 1: Attack
 }
 
 #[component_deserialize]
 #[derive(PartialEq)]
-pub enum GameCellKind {
-    Field,
-    City,
-    Capital,
-    Mountain,
-    Forest,
-}
+pub enum GameCellKind { Field, City, Capital, Mountain, Forest }
 
 #[component_deserialize]
 #[derive(PartialEq)]
-pub enum GameCellOwner {
-    Player(u8),
-    Nobody,
+pub enum GameCellOwner { Player(u8), Nobody }
+
+// ---------------------------------------------------------
+// 3. LOGIC & ERROR HANDLING
+// ---------------------------------------------------------
+
+impl Game {
+    /// Applies rate limiting to player actions
+    pub fn validate_move_timing(&mut self, player_index: usize) -> Result<()> {
+        let current_slot = Clock::get()?.slot;
+        let player = &mut self.players[player_index];
+
+        // 2-slot cooldown (Anti-Spam Shield)
+        if current_slot - player.last_action_slot < 2 {
+            return Err(GameError::ActionTooFast.into());
+        }
+
+        player.last_action_slot = current_slot;
+        Ok(())
+    }
+}
+
+#[error_code]
+pub enum GameError {
+    #[msg("The game status is not currently set to Playing.")]
+    StatusIsNotPlaying,
+    #[msg("The cell's position is out of bounds")]
+    CellIsOutOfBounds,
+    #[msg("Action too fast! Neural link cooling down.")]
+    ActionTooFast,
+    #[msg("Only the winner or the arena authority can close this match.")]
+    UnauthorizedClosing,
 }
 
 // ---------------------------------------------------------
-// 3. INITIALIZATION & UTILITIES
+// 4. INITIALIZATION DEFAULTS
 // ---------------------------------------------------------
 
 impl Default for Game {
@@ -107,23 +131,4 @@ impl GameCell {
             occupant: None,
         }
     }
-}
-
-impl Game {
-    pub fn compute_index(&self, x: u8, y: u8) -> Result<usize> {
-        if x >= self.size_x || y >= self.size_y {
-            return Err(GameError::CellIsOutOfBounds.into());
-        }
-        Ok(usize::from(y) * usize::from(self.size_x) + usize::from(x))
-    }
-}
-
-#[error_code]
-pub enum GameError {
-    #[msg("The game status is not currently set to Playing.")]
-    StatusIsNotPlaying,
-    #[msg("The cell's position is out of bounds")]
-    CellIsOutOfBounds,
-    #[msg("The cell cannot be interacted with")]
-    CellIsNotWalkable,
 }
