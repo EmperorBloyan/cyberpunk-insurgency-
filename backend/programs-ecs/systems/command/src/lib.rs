@@ -83,12 +83,12 @@ pub mod command {
         // Update player cooldown
         player.last_action_slot = Clock::get()?.slot;
 
-        Ok(ctx.accounts)
+                Ok(ctx.accounts)
     }
 
-           #[system_input]
+    #[system_input]
     pub struct Components {
         pub game: Game,
-        pub authority: Signer,
+        pub authority: Signer,  // ✅ ADD THIS LINE
     }
 }
