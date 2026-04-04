@@ -1,30 +1,149 @@
-.GamePlayRoot {
-  background: #050505;
-  min-height: 100vh;
+/* --- CYBERPUNK INSURGENCY: CORE VISUAL PROTOCOL --- */
+
+:root {
+  --neon-cyan: #06b6d4;
+  --neon-red: #dc2626;
+  --deep-black: #050505;
+  --zinc-900: #18181b;
+  --zinc-800: #27272a;
 }
 
-.NeuralLinkScreen {
-  background: radial-gradient(circle, #1a0505 0%, #050505 100%);
-  
-  .TerminalBox {
-    position: relative;
-    overflow: hidden;
-    
-    &::before {
-      content: "";
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 2px;
-      background: #ff0000;
-      animation: scanline 3s linear infinite;
-    }
+/* 1. Global Container Reset */
+.game-root-container {
+  background-color: var(--deep-black);
+  min-height: 100vh;
+  color: #fff;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  overflow-x: hidden;
+}
+
+/* 2. Neural Integrity Bars (Health) */
+.hp-bar-container {
+  background: var(--zinc-900);
+  border: 1px solid var(--zinc-800);
+  height: 1rem;
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 95%,
+      rgba(0, 0, 0, 0.4) 95%
+    );
+    background-size: 20px 100%;
+    pointer-events: none;
   }
 }
 
-@keyframes scanline {
-  0% { top: 0%; }
-  100% { top: 100%; }
+.hp-fill-cyan {
+  background: linear-gradient(90deg, #0891b2, var(--neon-cyan));
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.GamePlayRoot .ArenaContainer {
-  box-shadow: 0 0 40px rgba(0, 255, 157, 0.1);
+.hp-fill-red {
+  background: linear-gradient(90deg, #991b1b, var(--neon-red));
+  box-shadow: 0 0 15px rgba(220, 38, 38, 0.4);
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 3. The Grid Viewport (CRT Effect) */
+.viewport-frame {
+  position: relative;
+  background: #000;
+  border-top: 1px solid var(--zinc-800);
+  border-bottom: 1px solid var(--zinc-800);
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.9);
+
+  /* Scanline Overlay */
+  &::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 10;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+    opacity: 0.3;
+  }
+}
+
+/* 4. Packet History Sidebar */
+.packet-history-log {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--zinc-900);
+  padding: 1rem;
+  
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: var(--deep-black);
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--neon-cyan);
+    border-radius: 10px;
+  }
+}
+
+/* 5. Terminal Glitch Animations */
+@keyframes glitch-text {
+  0% { transform: translate(0); text-shadow: none; }
+  20% { transform: translate(-2px, 1px); text-shadow: 2px 0 var(--neon-red); }
+  40% { transform: translate(2px, -1px); text-shadow: -2px 0 var(--neon-cyan); }
+  60% { transform: translate(-1px, 2px); text-shadow: 1px 0 #fff; }
+  80% { transform: translate(1px, -2px); text-shadow: -1px 0 var(--neon-red); }
+  100% { transform: translate(0); text-shadow: none; }
+}
+
+.glitch-title {
+  animation: glitch-text 0.4s steps(2) infinite;
+  letter-spacing: -0.05em;
+}
+
+/* 6. Victory/Defeat Overlays */
+.session-terminated-overlay {
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+
+  .node-status-line {
+    height: 2px;
+    width: 200px;
+    margin: 2rem 0;
+    &.winner { background: var(--neon-cyan); box-shadow: 0 0 20px var(--neon-cyan); }
+    &.loser { background: var(--neon-red); box-shadow: 0 0 20px var(--neon-red); }
+  }
+}
+
+/* 7. Action Buttons */
+.tactical-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  text-transform: uppercase;
+  font-weight: 900;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--neon-cyan);
+    color: var(--neon-cyan);
+    background: rgba(6, 182, 212, 0.05);
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
 }
