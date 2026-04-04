@@ -26,7 +26,7 @@ export function PageHome() {
 
   return (
     <div className="Container Centered">
-      <Text value="Home" isTitle={true} />
+      <Text value="Blitz Brawler" isTitle={true} />
       <Button
         text="+ Create a new game +"
         onClick={() => {
