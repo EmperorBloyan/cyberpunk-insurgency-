@@ -19,12 +19,12 @@ export function PageCreate() {
   React.useEffect(() => {
     let lastLogs: string[] = [];
     
-    // Customize logs to fit the Blitz Brawler "Lore"
+    // Updated flavor text for Web War I
     const customOnLog = (log: string) => {
         let flavoredLog = log;
-        if (log.includes("Creating")) flavoredLog = "📡 INITIALIZING EPHEMERAL ROLLUP...";
-        if (log.includes("PDA")) flavoredLog = "🔑 GENERATING ARENA ADDRESS...";
-        if (log.includes("Success")) flavoredLog = "⚔️ SHADOW ARENA READY. PREPARE FOR DEPLOYMENT.";
+        if (log.includes("Creating")) flavoredLog = "📡 ESTABLISHING NEURAL UPLINK...";
+        if (log.includes("PDA")) flavoredLog = "🔑 SECURING WARZONE COORDINATES...";
+        if (log.includes("Success")) flavoredLog = "⚔️ BATTLEFIELD STABILIZED. PREPARE FOR WEB WAR I.";
         
         lastLogs = [...lastLogs, flavoredLog];
         setLogs(lastLogs);
@@ -53,17 +53,17 @@ export function PageCreate() {
       {/* Header with Pulse Animation */}
       <div className="mb-12 text-center">
         <h1 className="text-5xl font-black italic tracking-tighter text-red-600 animate-pulse">
-          DEPLOYING ARENA
+          DEPLOYING FRONT-LINE
         </h1>
-        <div className="h-1 w-32 bg-red-600 mx-auto mt-2 shadow-[0_0_10px_#dc2626]" />
+        <div className="h-1 w-32 bg-red-600 mx-auto mt-2 shadow-[0_0_15px_#dc2626]" />
       </div>
 
       <div className="w-full max-w-lg space-y-4 mb-12 text-center opacity-80">
         <p className="text-slate-400 font-mono text-xs uppercase tracking-widest">
-            Protocol: Blitz Brawler v1.0 // Shadow Replay System
+            Protocol: WEB WAR I // Neural Link v1.0
         </p>
-        <p className="text-blue-400 font-bold">
-            Rehydrating previous champion's intent data...
+        <p className="text-blue-400 font-bold uppercase text-sm tracking-tight">
+            Syncing Combat Data with Ephemeral Rollup...
         </p>
       </div>
 
@@ -75,12 +75,12 @@ export function PageCreate() {
                 <div className="w-2 h-2 rounded-full bg-yellow-500" />
                 <div className="w-2 h-2 rounded-full bg-green-500" />
             </div>
-            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-tighter">Arena_Init_Logs</span>
+            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-tighter">Combat_Deployment_Logs</span>
         </div>
         
         <div className="p-6 font-mono text-sm space-y-3 min-h-[200px]">
           {logs.length === 0 && (
-            <div className="text-slate-700 animate-pulse">Waiting for Rollup sequence...</div>
+            <div className="text-slate-700 animate-pulse">Awaiting handshake with Solana Validator...</div>
           )}
           <ForEach
             values={logs}
@@ -99,7 +99,7 @@ export function PageCreate() {
       <div className="mt-8">
         <div className="flex items-center gap-2 text-slate-600 text-[10px] uppercase font-bold tracking-[0.2em]">
             <div className="w-4 h-4 border-2 border-slate-700 border-t-red-600 rounded-full animate-spin" />
-            Securing VRF Entropy Source
+            Verifying Blockchain Entropy
         </div>
       </div>
     </div>
@@ -114,16 +114,15 @@ function scheduleCreate(
 ) {
   const timeout = setTimeout(async () => {
     try {
-      // Step 1: Create the Game on the Ephemeral Rollup
       const entityPda = await gameCreate(engine, onLog);
       const code = entityPda.toBase58();
       
-      // Give the user a moment to see the "Success" log before navigating
-      setTimeout(() => navigate("/play/" + code), 800);
+      // Delay navigation so the user can feel the "Deployment" completion
+      setTimeout(() => navigate("/play/" + code), 1200);
       
     } catch (error) {
       console.error("create-error", error);
-      onError("CRITICAL_FAILURE: Could not stabilize the Shadow Arena.");
+      onError("SIGNAL_LOST: Could not manifest the Web War I theater.");
     }
   }, 500);
 
