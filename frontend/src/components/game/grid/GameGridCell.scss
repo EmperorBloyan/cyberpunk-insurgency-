@@ -1,50 +1,48 @@
 .GameGridCell {
   position: relative;
   user-select: none;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-sizing: border-box;
 
-  border: 2px solid rgba(255, 255, 255, 0.3);
-
-  > .Type {
-    position: absolute;
-    height: 100%;
-    width: 100%;
+  &.IsUser {
+    background: radial-gradient(circle, rgba(0, 255, 157, 0.15) 0%, transparent 70%);
+    border: 1px solid rgba(0, 255, 157, 0.4);
+    z-index: 5;
   }
 
-  > .Strength {
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    text-align: center;
-    font-weight: bold;
-    font-size: 16px;
+  &.IsGhost {
+    background: radial-gradient(circle, rgba(96, 165, 250, 0.15) 0%, transparent 70%);
+    border: 1px solid rgba(96, 165, 250, 0.4);
+    animation: cell-glitch 2s infinite;
+    z-index: 4;
   }
 
-  .Strength {
-    background-color: rgba(127, 127, 127, 0.3);
-  }
-  &.Player0 {
-    .Strength {
-      background-color: rgba(0, 0, 255, 0.3);
-    }
-  }
-  &.Player1 {
-    .Strength {
-      background-color: rgba(255, 0, 0, 0.3);
-    }
-  }
-
-  &.Owned,
   &.Active {
-    cursor: pointer;
+    border-color: #00ff9d;
+    box-shadow: inset 0 0 10px rgba(0, 255, 157, 0.3);
   }
 
-  &.Owned:hover {
-    border-color: grey;
+  .Loot {
+    font-size: 1.2rem;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+    z-index: 10;
   }
-  &.Active,
-  &.Owned.Active {
-    border-color: yellow;
+
+  .Strength-Badge {
+    color: #94a3b8;
+    border-top-left-radius: 4px;
   }
+
+  // Hover effect for "Walkable" cells
+  &:hover:not(.Occupied-0):not(.Occupied-1) {
+    background: rgba(255, 255, 255, 0.08);
+    cursor: crosshair;
+  }
+}
+
+@keyframes cell-glitch {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; transform: scale(0.98); }
+  52% { opacity: 1; transform: scale(1.02); }
 }
