@@ -1,12 +1,17 @@
 use bolt_lang::*;
-use crate::*;
+use game::Game;
+use game::GameStatus;
+use game::GameCellOwner;
+use game::GameCellKind;
 
 declare_id!("8tKAapRKPrNkxXwcArbSAnBHieYnX6M2WoTxukbCQtTa");
 
 const TICKS_PER_SECOND: u64 = 20;
 
 #[system]
-pub struct Tick {
+pub mod tick {
+    use super::*;
+
     pub fn execute(ctx: Context<Components>) -> Result<()> {
         let game = &mut ctx.accounts.game;
 
@@ -61,10 +66,9 @@ pub struct Tick {
 
         Ok(())
     }
-}
 
-#[derive(Accounts)]
-pub struct Components<'info> {
-    #[account(mut)]
-    pub game: Account<'info, Game>,
+    #[system_input]
+    pub struct Components {
+        pub game: Game,
+    }
 }
