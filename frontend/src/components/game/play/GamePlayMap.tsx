@@ -1,3 +1,4 @@
+import { PoisonRingOverlay } from "./PoisonRingOverlay";
 import * as React from "react";
 import { PublicKey } from "@solana/web3.js";
 import { useMagicBlockEngine } from "../../../engine/MagicBlockEngineProvider";
