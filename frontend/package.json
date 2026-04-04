@@ -1,13 +1,14 @@
 {
-  "name": "web-war-i-frontend",
+  "name": "cyberpunk-insurgency-frontend",
   "version": "1.0.0",
-  "description": "The front-line interface for Web War I",
+  "description": "Neural-Link interface for Cyberpunk Insurgency: An asynchronous on-chain brawler.",
   "license": "MIT",
   "main": "index.js",
   "scripts": {
     "build-dev": "webpack --mode=development",
     "build-prod": "webpack --mode=production",
-    "dev": "webpack serve --hot --port 8080",
+    "dev": "webpack serve --hot --port 8080 --open",
+    "start": "npm run dev",
     "lint:fix": "prettier \"*/**/*{.ts,.tsx,.json}\" -w",
     "lint": "prettier \"*/**/*{.ts,.tsx,.json}\" --check"
   },
