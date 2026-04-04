@@ -1,0 +1,17 @@
+{
+  "name": "cyberpunk-insurgency",
+  "version": "0.1.0",
+  "description": "A high-speed tactical game on Solana using BOLT ECS.",
+  "scripts": {
+    "build": "bolt build",
+    "deploy": "bolt deploy",
+    "localnet": "solana-test-validator --reset",
+    "dev": "cd frontend && npm run dev",
+    "web:build": "cd frontend && npm run build",
+    "genesis": "npm run build && npm run deploy && npm run dev",
+    "clean": "rm -rf backend/target frontend/node_modules .anchor .bolt"
+  },
+  "dependencies": {
+    "@magicblock-labs/bolt-sdk": "^0.1.9"
+  }
+}
