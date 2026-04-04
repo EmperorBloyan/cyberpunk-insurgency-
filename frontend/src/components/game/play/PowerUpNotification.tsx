@@ -1,13 +1,34 @@
 import * as React from "react";
+import "./PowerUpNotification.scss";
 
-export function PowerUpNotification({ text }: { text: string }) {
+interface PowerUpProps {
+  text: string;
+  onComplete?: () => void; // Callback to tell the parent to stop showing this
+}
+
+export function PowerUpNotification({ text, onComplete }: PowerUpProps) {
+  React.useEffect(() => {
+    // 1. Set a timer to clear the notification after 2 seconds
+    const timer = setTimeout(() => {
+      if (onComplete) onComplete();
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [text, onComplete]);
+
+  if (!text) return null;
+
   return (
-    <div className="absolute inset-0 flex items-center justify-center z-[100] pointer-events-none">
-      <div className="animate-powerup-pop">
-        <h1 className="text-6xl font-black italic text-yellow-400 drop-shadow-[0_0_20px_rgba(250,204,21,0.9)] tracking-tighter uppercase">
-          {text}
-        </h1>
-        <div className="h-1 bg-yellow-400 w-full animate-shimmer shadow-[0_0_10px_#facc15]" />
+    <div className="PowerUpNotification">
+      <div className={`Toast ${text.includes("ATTACK") ? "Attack" : ""}`}>
+        <div className="flex flex-col items-center">
+          <span className="text-[10px] opacity-70 tracking-widest">SYSTEM UPGRADE</span>
+          <h1 className="text-4xl font-black tracking-tighter">
+            {text}
+          </h1>
+          {/* Decorative Shimmer Line */}
+          <div className="h-0.5 bg-current w-full mt-1 animate-pulse" />
+        </div>
       </div>
     </div>
   );
