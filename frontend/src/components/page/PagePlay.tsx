@@ -19,7 +19,8 @@ export function PagePlay() {
   // 1. Memoize PDAs for stability
   const { entityPda, gamePda } = React.useMemo(() => {
     try {
-      const entity = new PublicKey(params.id!);
+      if (!params.id) throw new Error("No ID");
+      const entity = new PublicKey(params.id);
       return {
         entityPda: entity,
         gamePda: FindComponentPda({
@@ -32,17 +33,21 @@ export function PagePlay() {
     }
   }, [params.id]);
 
-  // 2. Real-time Listener for the Cyberpunk Insurgency State
+  // 2. Real-time Listener
   const [game, setGame] = React.useState<any>(undefined);
   
   React.useEffect(() => {
-    if (entityPda && gamePda) {
-      return gameListen(engine, entityPda, gamePda, setGame);
+    if (entityPda && gamePda && engine) {
+      // Ensure the cleanup function is returned correctly
+      const unsubscribe = gameListen(engine, entityPda, gamePda, setGame);
+      return () => {
+        if (typeof unsubscribe === 'function') unsubscribe();
+      };
     }
   }, [engine, entityPda, gamePda]);
 
   // Error State: Invalid Node ID
-  if (!entityPda) {
+  if (!entityPda || !gamePda) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#050505]">
         <GameError message="INVALID_NODE_COORDINATES" />
@@ -50,7 +55,7 @@ export function PagePlay() {
     );
   }
 
-  // Error State: Fetch Failure
+  // Error State: Fetch Failure (Signal Loss)
   if (game === null) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#050505]">
@@ -62,7 +67,7 @@ export function PagePlay() {
   return (
     <div className="flex flex-col items-center justify-start min-h-screen bg-[#050505] p-4 md:p-8 overflow-hidden selection:bg-cyan-900/50">
       
-      {/* Visual Header Decoration: The Cyberpunk Terminal */}
+      {/* Visual Header Decoration */}
       <div className="w-full max-w-5xl flex justify-between items-end mb-10 border-b border-zinc-900 pb-8">
         <div>
           <h1 className="text-3xl font-black text-white tracking-tighter uppercase">
@@ -88,7 +93,7 @@ export function PagePlay() {
       {/* Main Game Interface Logic */}
       <div className="w-full max-w-5xl flex flex-col items-center">
         {(() => {
-          // Loading Phase: Rehydrating Intent
+          // 1. Loading Phase
           if (game === undefined) {
             return (
               <div className="flex flex-col items-center mt-32">
@@ -105,8 +110,11 @@ export function PagePlay() {
             );
           }
 
-          // Lobby / Neural Prep Phase
-          if (game.status.generate || game.status.lobby) {
+          // 2. Logic Check: Convert Enum Object to String
+          // Anchor enums come back as { lobby: {} } or { playing: {} }
+          const status = Object.keys(game.status)[0].toLowerCase();
+
+          if (status === "lobby") {
             return (
               <div className="w-full animate-in fade-in zoom-in duration-500">
                 <GameLobbyRoot
@@ -118,8 +126,7 @@ export function PagePlay() {
             );
           }
 
-          // Combat / Archive Phase
-          if (game.status.playing || game.status.finished) {
+          if (status === "playing" || status === "finished") {
             return (
               <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <GamePlayRoot 
@@ -135,7 +142,7 @@ export function PagePlay() {
         })()}
       </div>
 
-      {/* Tactical Background Overlays */}
+      {/* Overlay Decoration */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-[100] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(6,182,212,0.06),rgba(0,255,0,0.02),rgba(220,38,38,0.06))] bg-[length:100%_2px,3px_100%]" />
       <div className="fixed inset-0 pointer-events-none bg-cyan-500 opacity-[0.01] mix-blend-overlay z-[99]" />
     </div>
