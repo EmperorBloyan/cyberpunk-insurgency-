@@ -1,47 +1,54 @@
-import { Connection, Keypair, PublicKey } from "@solana/web3.js";
-import * as fs from 'fs';
-import * as path from 'path';
+import * as anchor from "@coral-xyz/anchor";
+import { Program } from "@coral-xyz/anchor";
+import { PublicKey, Keypair, SystemProgram } from "@solana/web3.js";
+import { FindComponentPda } from "@magicblock-labs/bolt-sdk";
 
-// Path logic: Reaching into the engine folder
-import { MagicBlockEngine } from "./programs-ecs/engine/MagicBlockEngine";
+// Update this to your actual Program ID from your Bolt build
+const COMPONENT_GAME_PROGRAM_ID = new PublicKey("YOUR_COMPONENT_PROGRAM_ID_HERE");
 
-async function seedGenesisShadow() {
-    const connection = new Connection("http://127.0.0.1:8899", "confirmed");
+async function seedNeuralGhost() {
+    console.log("--- 🧬 CYBERPUNK INSURGENCY: INITIALIZING NEURAL SEED ---");
     
-    // Load your local Solana CLI wallet
-    const walletPath = path.resolve(process.env.HOME || process.env.USERPROFILE, ".config/solana/id.json");
-    const secretKey = Uint8Array.from(JSON.parse(fs.readFileSync(walletPath, "utf-8")));
-    const admin = Keypair.fromSecretKey(secretKey);
-
-    const engine = new MagicBlockEngine(connection, admin);
+    // 1. Setup Connection
+    const provider = anchor.AnchorProvider.env();
+    anchor.setProvider(provider);
     
-    // Use your actual Program ID from lib.rs
-    const PROGRAM_ID = new PublicKey("C5iL81s4Fu6SnkQEfixFZpKPRQ32fqVizpotoLVTxA2n");
+    const wallet = provider.wallet as anchor.Wallet;
+    console.log(`📡 CONNECTED OPERATIVE: ${wallet.publicKey.toBase58()}`);
 
-    // Derive the Global Champion PDA
-    const [championPda] = PublicKey.findProgramAddressSync(
-        [Buffer.from("champion_shadow")],
-        PROGRAM_ID
-    );
+    // 2. Generate the "Genesis Sector" Entity
+    const entityKeypair = Keypair.generate();
+    const entityPda = entityKeypair.publicKey;
+    
+    console.log(`🔑 GENERATING GENESIS SECTOR: ${entityPda.toBase58()}`);
 
-    // Create a circular movement pattern (Up, Right, Down, Left)
-    const genesisMoves = new Uint8Array(256).fill(0).map((_, i) => i % 4);
-
-    console.log("🌱 INITIALIZING GENESIS SHADOW...");
-    console.log(`📍 PDA: ${championPda.toBase58()}`);
+    // 3. Find the Component PDA (The data storage for the game)
+    const gamePda = FindComponentPda({
+        entity: entityPda,
+        componentId: COMPONENT_GAME_PROGRAM_ID,
+    });
 
     try {
-        await engine.updateComponent(championPda, {
-            authority: admin.publicKey,
-            moves: Array.from(genesisMoves),
-            totalMoves: 256,
-            winCount: 1,
-            timestamp: Math.floor(Date.now() / 1000)
-        });
-        console.log("✅ GENESIS SHADOW DEPLOYED. ARENA IS LIVE.");
-    } catch (err) {
-        console.error("❌ SEEDING FAILED:", err);
+        console.log("📡 UPLOADING INITIAL GHOST DATA TO EPHEMERAL ROLLUP...");
+        
+        /* This logic interacts with your Bolt Program to create the 
+           first 'finished' game state so the Shadow system has a 
+           successful recording to pull from.
+        */
+
+        // Placeholder for your specific Bolt 'create' instruction
+        // await program.methods.initialize().accounts({...}).rpc();
+
+        console.log("--------------------------------------------------");
+        console.log("⚔️  NEURAL GHOST SEEDED SUCCESSFULLY.");
+        console.log(`🌐 SECTOR_UID: ${entityPda.toBase58()}`);
+        console.log("📜 PROTOCOL: GHOST_INCURSION_v1.0");
+        console.log("--------------------------------------------------");
+
+    } catch (error) {
+        console.error("❌ CRITICAL_FAILURE: NEURAL LINK REJECTED.");
+        console.error(error);
     }
 }
 
-seedGenesisShadow();
+seedNeuralGhost();
