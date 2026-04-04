@@ -1,17 +1,24 @@
 [workspace]
-members = ["programs-ecs/components/*", "programs-ecs/systems/*"]
+members = [
+    "programs-ecs/systems/*",
+    "programs-ecs/components/*"
+]
 resolver = "2"
 
 [profile.release]
+# Essential Solana/BPF Optimizations
 overflow-checks = true
 lto = "fat"
 codegen-units = 1
+panic = "abort"
+
 [profile.release.build-override]
+# Ensures dependencies are built with maximum speed
 opt-level = 3
 incremental = false
 codegen-units = 1
-[profile.release]
-overflow-checks = true
-lto = "fat"
-codegen-units = 1
-panic = "abort" # Add this line
+
+[workspace.dependencies]
+# Centralized versioning for your systems
+bolt-lang = "0.1.9"
+anchor-lang = "0.30.1"
