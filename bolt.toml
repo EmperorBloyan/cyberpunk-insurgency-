@@ -1,6 +1,26 @@
-echo '[project]
-name = "cyberpunk-insurgency"
+[project]
+name = "cyberpunk_insurgency"
+version = "0.1.0"
 
-[programs]
-movement = "HE8f4rE5s1oW4tS2vE1rS8iOn1D"
-' > bolt.toml
+[component.game]
+id = "EHZHVN8JjFdVJ7Ps3e6fX9kzQQDo7u8VT3mL5X4p9n7e"
+
+# --- Systems Mapping ---
+
+[system.generate]
+id = "C5iL81s4Fu6SnkQEfixFZpKPRQ32fqVizpotoLVTxA2n"
+
+[system.join]
+id = "AddressFromYourJoinSystem1111111111" # Update this to your Join system's ID
+
+[system.start]
+id = "Cu8JkUA9a5msGWNChAuhBJ9PTE6FdevwHNgPyxbABkUL"
+
+[system.command]
+id = "YGKbhp7S1cCvvheyQ8rcuECKUR1SVpKpHjnqCqdP1cm"
+
+[system.finish]
+id = "HBdGPJycpHjjJ149T3RQGtQWjSC39MVpcKYF6JJvaF6e"
+
+[system.tick]
+id = "YourTickSystemAddress11111111111" # Update this to your Tick system's ID
