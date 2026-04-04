@@ -128,7 +128,6 @@ export class MagicBlockEngine {
     transaction: Transaction
   ): Promise<string> {
     console.log(name, "sending");
-    transaction.compileMessage;
     const signature = await connectionEphem.sendTransaction(
       transaction,
       [this.sessionKey],
