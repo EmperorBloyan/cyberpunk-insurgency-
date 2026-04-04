@@ -1,105 +1,90 @@
 use bolt_lang::*;
 
-// REGISTER THE SYSTEMS
-pub mod powerup_spawn;
-pub mod shadow_record;
-pub mod match_cleanup;
-
-declare_id!("HE8f4rE5s1oW4tS2vE1rS8iOn1D");
-
-#[program]
-pub mod movement {
-    use super::*;
-
-    pub fn initialize_game(ctx: Context<InitializeGame>) -> Result<()> {
-        let game = &mut ctx.accounts.game;
-        game.status = GameStatus::Lobby;
-        game.size_x = 16;
-        game.size_y = 8;
-        // Initialize default player stats
-        for player in game.players.iter_mut() {
-            player.health = 100;
-            player.attack_power = 10;
-        }
-        Ok(())
-    }
-}
-
-// ---------------------------------------------------------
-// 1. GLOBAL COMPONENTS (Persistent)
-// ---------------------------------------------------------
+// Use this valid Solana Public Key for your Game Component
+declare_id!("EHZHVN8JjFdVJ7Ps3e6fX9kzQQDo7u8VT3mL5X4p9n7e");
 
 #[component]
-pub struct ChampionShadow {
-    pub authority: Pubkey,
-    pub moves: [u8; 256],      
-    pub total_moves: u32,
-    pub win_count: u32,
-    pub timestamp: i64,
-}
-
-// ---------------------------------------------------------
-// 2. MATCH COMPONENTS (Ephemeral)
-// ---------------------------------------------------------
-
-#[component]
+#[derive(Copy)]
 pub struct Game {
     pub status: GameStatus,
     pub size_x: u8,
     pub size_y: u8,
-    pub players: [GamePlayer; 2],
-    pub cells: [GameCell; 128], 
-    pub tick_next_slot: u64,    
+    pub tick_next_slot: u64,
+    pub players: [Player; 2],      // Support for 2 players
+    pub cells: [GameCell; 128],    // 16x8 grid
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq)]
 pub enum GameStatus {
-    Generate,
     Lobby,
     Playing,
     Finished,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Default)]
-pub struct GamePlayer {
-    pub ready: bool,
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Default, PartialEq)]
+pub struct Player {
     pub authority: Pubkey,
     pub health: u8,
     pub attack_power: u8,
-    pub last_action_slot: u64, 
+    pub last_action_slot: u64,
+    pub ready: bool,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Default, PartialEq)]
 pub struct GameCell {
     pub kind: GameCellKind,
     pub owner: GameCellOwner,
     pub strength: u8,
-    pub occupant: u8, // 0: None, 1: Health, 2: Attack
+    pub occupant: u8,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq)]
-pub enum GameCellKind { Field, City, Capital, Mountain, Forest }
+pub enum GameCellKind {
+    Field,
+    Forest,
+    Mountain,
+    City,
+    Capital,
+}
+
+impl Default for GameCellKind {
+    fn default() -> Self {
+        GameCellKind::Field
+    }
+}
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq)]
-pub enum GameCellOwner { Player(u8), Nobody }
+pub enum GameCellOwner {
+    Nobody,
+    Player(u8),
+}
 
-// ---------------------------------------------------------
-// 3. INITIALIZATION & CONTEXTS
-// ---------------------------------------------------------
+impl Default for GameCellOwner {
+    fn default() -> Self {
+        GameCellOwner::Nobody
+    }
+}
 
-#[derive(Accounts)]
-pub struct InitializeGame<'info> {
-    #[account(init, payer = payer, space = Game::size())]
-    pub game: Account<'info, Game>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
-    pub system_program: Program<'info, System>,
+// Helper methods for the systems to use
+impl Game {
+    pub fn get_cell(&self, x: u8, y: u8) -> Result<&GameCell> {
+        let index = (y as usize) * (self.size_x as usize) + (x as usize);
+        if index < self.cells.len() {
+            Ok(&self.cells[index])
+        } else {
+            Err(GameError::InvalidStep.into()) 
+        }
+    }
 }
 
 #[error_code]
 pub enum GameError {
-    #[msg("The game status is not currently set to Playing.")]
+    #[msg("The game status does not allow this action.")]
+    StatusIsNotLobby,
+    #[msg("The game is currently playing.")]
     StatusIsNotPlaying,
-    #[msg("Action too fast! Neural link cooling down.")]
+    #[msg("Action sent too quickly.")]
     ActionTooFast,
+    #[msg("Invalid grid movement.")]
+    InvalidStep,
 }
