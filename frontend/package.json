@@ -1,12 +1,13 @@
 {
-  "name": "solana-generals-frontend",
+  "name": "web-war-i-frontend",
+  "version": "1.0.0",
+  "description": "The front-line interface for Web War I",
   "license": "MIT",
   "main": "index.js",
   "scripts": {
     "build-dev": "webpack --mode=development",
     "build-prod": "webpack --mode=production",
     "dev": "webpack serve --hot --port 8080",
-    "test": "",
     "lint:fix": "prettier \"*/**/*{.ts,.tsx,.json}\" -w",
     "lint": "prettier \"*/**/*{.ts,.tsx,.json}\" --check"
   },
@@ -27,13 +28,17 @@
     "url-loader": "4.1.1",
     "webpack": "5.88.2",
     "webpack-cli": "5.1.4",
-    "webpack-dev-server": "4.15.1"
+    "webpack-dev-server": "4.15.1",
+    "buffer": "^6.0.3",
+    "crypto-browserify": "^3.12.0",
+    "stream-browserify": "^3.0.0"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.30.1",
     "@magicblock-labs/bolt-sdk": "0.1.10",
     "@solana/wallet-adapter-base": "^0.9.23",
     "@solana/wallet-adapter-react": "^0.15.35",
+    "@solana/wallet-adapter-react-ui": "^0.9.35",
     "@solana/web3.js": "^1.93.0",
     "process": "^0.11.10",
     "react": "18.2.0",
