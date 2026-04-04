@@ -155,3 +155,17 @@ pub enum GameError {
     #[msg("The cell cannot be interacted with")]
     CellIsNotWalkable,
 }
+#[component_deserialize]
+#[derive(PartialEq, Default)]
+pub struct PowerUp {
+    pub p_type: u8, // 0 for Health, 1 for Attack
+    pub value: u64,
+}
+
+#[component_deserialize]
+#[derive(PartialEq, Default)]
+pub struct GameCell {
+    pub occupant: Option<u8>, // Using u8 to represent if a powerup is here
+    pub player: Option<u8>,
+}
+
