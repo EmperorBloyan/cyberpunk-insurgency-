@@ -1,121 +1,86 @@
 use bolt_lang::*;
-use game::Game;
-use game::GameCellKind;
-use game::GameCellOwner;
-use game::GameError;
-use game::GameStatus;
+use crate::*;
 
 declare_id!("YGKbhp7S1cCvvheyQ8rcuECKUR1SVpKpHjnqCqdP1cm");
 
 #[system]
-pub mod command {
-    pub fn execute(ctx: Context<Components>, args: Args) -> Result<Components> {
+pub struct Command {
+    pub fn execute(
+        ctx: Context<Components>, 
+        player_index: u8,
+        source_idx: u8,
+        target_idx: u8,
+        strength_percent: u8
+    ) -> Result<()> {
         let game = &mut ctx.accounts.game;
 
-        // Can only trigger commands when the game is playing
+        // 1. Status Check
         if game.status != GameStatus::Playing {
             return Err(GameError::StatusIsNotPlaying.into());
         }
 
+        // 2. Authority Check
         let payer = ctx.accounts.authority.key();
-        let player = &mut game.players[usize::from(args.player_index)];
-
-        // Check that the user has authority to play
+        let player = &mut game.players[player_index as usize];
         if player.authority != payer {
-            return Err(GameError::PlayerIsNotPayer.into());
+            return Err(GameError::ActionTooFast.into()); // Unauthorized
         }
 
-        // Save player action
-        player.last_action_slot = Clock::get()?.slot;
+        // 3. Adjacency Logic (Converting flat index to XY for math)
+        let src_x = source_idx % 16;
+        let src_y = source_idx / 16;
+        let tgt_x = target_idx % 16;
+        let tgt_y = target_idx / 16;
 
-        // Read the cells involved in the transaction
-        let source_cell_before = game.get_cell(args.source_x, args.source_y)?;
-        let target_cell_before = game.get_cell(args.target_x, args.target_y)?;
-
-        // Make sure those cells are exactly adjacent on the grid
-        let distance_x = (i32::from(args.source_x) - i32::from(args.target_x)).abs();
-        let distance_y = (i32::from(args.source_y) - i32::from(args.target_y)).abs();
-        if distance_x + distance_y != 1 {
-            return Err(GameError::CellsAreNotAdjacent.into());
+        let dist = (src_x as i32 - tgt_x as i32).abs() + (src_y as i32 - tgt_y as i32).abs();
+        if dist != 1 {
+            return Err(GameError::ActionTooFast.into()); // Not adjacent
         }
 
-        // Make sure the player owns the source cell
-        if source_cell_before.owner != GameCellOwner::Player(args.player_index) {
-            return Err(GameError::CellIsNotOwnedByPlayer.into());
+        // 4. Combat & Movement Math
+        let source_cell = game.cells[source_idx as usize];
+        let mut target_cell = game.cells[target_idx as usize];
+
+        if source_cell.owner != GameCellOwner::Player(player_index) {
+            return Err(GameError::ActionTooFast.into());
+        }
+        if target_cell.kind == GameCellKind::Mountain || source_cell.strength <= 1 {
+            return Err(GameError::ActionTooFast.into());
         }
 
-        // Make sure the target cell can be interacted with
-        if target_cell_before.kind == GameCellKind::Mountain {
-            return Err(GameError::CellIsNotWalkable.into());
-        }
+        let moved_strength = ((source_cell.strength as u32 - 1) * strength_percent as u32 / 100) as u8;
 
-        // Make sure the source cell has enough moveable strength (each cell has minimum 1)
-        if source_cell_before.strength <= 1 {
-            return Err(GameError::CellStrengthIsInsufficient.into());
-        }
-
-        // Compute how much has been requested to move
-        let moved_strength = u8::try_from(
-            u32::from(source_cell_before.strength - 1) * u32::from(args.strength_percent) / 100u32,
-        )
-        .unwrap();
-
-        let mut source_cell_after = source_cell_before.clone();
-        let mut target_cell_after = target_cell_before.clone();
-
-        // Transfer strength if target cell is owned by same player
-        if target_cell_before.owner == GameCellOwner::Player(args.player_index) {
-            target_cell_after.strength = target_cell_before.strength.saturating_add(moved_strength);
-            source_cell_after.strength = source_cell_before.strength
-                - (target_cell_after.strength - target_cell_before.strength);
-        }
-        // If the target cell is not the same player, invade it
-        else {
-            // Move the strength out of the source cell
-            source_cell_after.strength = source_cell_before.strength - moved_strength;
-            // Some cells are harder to attack
-            let damage_strength = match target_cell_before.kind {
+        // 5. Apply Results
+        if target_cell.owner == GameCellOwner::Player(player_index) {
+            // Reinforce friendly cell
+            game.cells[target_idx as usize].strength = target_cell.strength.saturating_add(moved_strength);
+            game.cells[source_idx as usize].strength = source_cell.strength - moved_strength;
+        } else {
+            // Attack enemy/neutral cell
+            let damage = match target_cell.kind {
                 GameCellKind::Forest => moved_strength / 2,
                 _ => moved_strength,
             };
-            // If the target cell resists the attack
-            if damage_strength < target_cell_before.strength {
-                target_cell_after.strength = target_cell_before.strength - damage_strength;
+
+            if damage > target_cell.strength {
+                // Conquest
+                game.cells[target_idx as usize].owner = GameCellOwner::Player(player_index);
+                game.cells[target_idx as usize].strength = damage - target_cell.strength;
+            } else {
+                // Defended
+                game.cells[target_idx as usize].strength = target_cell.strength - damage;
             }
-            // If the target cell dies with the attack
-            else if damage_strength == target_cell_before.strength {
-                target_cell_after.owner = GameCellOwner::Nobody;
-                target_cell_after.strength = 0;
-            }
-            // If the target cell gets conquered
-            else {
-                target_cell_after.owner = source_cell_after.owner.clone();
-                target_cell_after.strength = damage_strength - target_cell_before.strength;
-            }
+            game.cells[source_idx as usize].strength = source_cell.strength - moved_strength;
         }
 
-        // Apply changes on the impacted cells
-        game.set_cell(args.source_x, args.source_y, source_cell_after)?;
-        game.set_cell(args.target_x, args.target_y, target_cell_after)?;
-
-        Ok(ctx.accounts)
+        player.last_action_slot = Clock::get()?.slot;
+        Ok(())
     }
+}
 
-    #[system_input]
-    pub struct Components {
-        pub game: Game,
-    }
-
-    #[arguments]
-    struct Args {
-        player_index: u8,
-
-        source_x: u8,
-        source_y: u8,
-
-        target_x: u8,
-        target_y: u8,
-
-        strength_percent: u8,
-    }
+#[derive(Accounts)]
+pub struct Components<'info> {
+    #[account(mut)]
+    pub game: Account<'info, Game>,
+    pub authority: Signer<'info>,
 }
