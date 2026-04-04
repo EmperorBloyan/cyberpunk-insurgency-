@@ -34,23 +34,26 @@ export function GamePlayRoot({
     return scheduleFinish(engine, entityPda, gamePda);
   }, [engine, entityPda, gamePda]);
 
-  // Hint on game status
-  let status = "?";
+  // Hint on game status with Blitz Brawler flavor
+  let status = "⚔️ Shadow Arena Active";
   if (game.status.playing) {
-    status = "The game is in progress!";
+    status = "⚔️ Fighting the Ghost • Survive the Shrinking Poison Ring!";
   }
   if (game.status.finished) {
-    status = "The game is finished.";
+    status = "🏆 Arena Closed • New Ghost Recorded";
   }
 
-  // Show the slot of the game
   status += " (tick slot: " + game.tickNextSlot.toString() + ")";
 
   return (
     <>
+      <Text value="Blitz Brawler: Shadow Arena" isTitle={true} />
+      <Text value="You are fighting the Ghost of the previous champion" />
+      <Text value="Every move is onchain • Beat the Shadow to claim the title" />
+
       <div
         className="Horizontal"
-        style={{ border: "2px solid rgba(255, 255, 255, 0.3)" }}
+        style={{ border: "2px solid rgba(255, 255, 255, 0.3)", margin: "15px 0" }}
       >
         <ForEach
           values={game.players}
@@ -59,8 +62,10 @@ export function GamePlayRoot({
           )}
         />
       </div>
-      <Text value="Drag and drop your army on the map" />
+
+      <Text value="Drag your units • Dodge the shrinking ring • Grab VRF power-ups" />
       <GamePlayMap entityPda={entityPda} game={game} />
+      
       <Text value={status} />
     </>
   );
@@ -72,7 +77,7 @@ function scheduleTick(
   gamePda: PublicKey
 ) {
   // Run ticks as fast as possible
-  console.log("start tick crank");
+  console.log("start tick crank - Blitz Brawler");
   let running = true;
   (async () => {
     const game = await gameFetch(engine, gamePda);
@@ -83,9 +88,9 @@ function scheduleTick(
       return;
     }
     while (running) {
-      // Wait a bit to avoid cloging the main thread
+      // Wait a bit to avoid clogging the main thread
       await new Promise((resolve) => setTimeout(resolve, 100));
-      // Run the tick system and try again as soon as it succeed
+      // Run the tick system and try again as soon as it succeeds
       try {
         await gameSystemTick(engine, entityPda);
       } catch (error) {
@@ -106,7 +111,7 @@ function scheduleFinish(
   gamePda: PublicKey
 ) {
   // Every once in a while, run the finish check
-  console.log("start finish checks");
+  console.log("start finish checks - Blitz Brawler");
   const interval = setInterval(async () => {
     try {
       const game = await gameFetch(engine, gamePda);
