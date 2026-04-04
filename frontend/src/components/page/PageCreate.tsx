@@ -43,8 +43,11 @@ export function PageCreate() {
 
   return (
     <div className="Container Centered">
-      <Text value="Creating a new game" isTitle={true} />
-      <Text value="This can take a few moments..." />
+      <Text value="Blitz Brawler: Shadow Arena" isTitle={true} />
+      <Text value="Creating a new Shadow Arena..." />
+      <Text value="You will fight the Ghost of the previous champion" />
+      <Text value="The arena will shrink. Power-ups spawn fairly via VRF." />
+      
       <If
         value={logs.length > 0}
         renderer={() => (
@@ -75,7 +78,7 @@ function scheduleCreate(
       return navigate("/play/" + code);
     } catch (error) {
       console.log("create-error", error);
-      onError("Failed to create the game!");
+      onError("Failed to create the Shadow Arena!");
     }
   }, 1000);
   return () => {
