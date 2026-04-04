@@ -85,3 +85,42 @@
     filter: blur(20px);
     background: radial-gradient(ellipse at center, white 0%, transparent 70%);
 }
+/* Add these to the bottom of your GamePlayer.scss */
+
+@keyframes ghost-glitch {
+  0% { transform: translate(0); }
+  2% { transform: translate(-2px, 1px) skew(2deg); }
+  4% { transform: translate(2px, -1px) skew(-2deg); }
+  6% { transform: translate(0); }
+  100% { transform: translate(0); }
+}
+
+@keyframes ghost-flicker {
+  0% { opacity: 1; }
+  5% { opacity: 0.4; }
+  10% { opacity: 1; }
+  15% { opacity: 0.8; }
+  20% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+.animate-ghost-glitch {
+  animation: ghost-glitch 3s infinite linear alternate-reverse;
+}
+
+.animate-ghost-flicker {
+  animation: ghost-flicker 5s infinite;
+}
+
+/* Ensure the health bar shimmer is visible */
+.health-bar-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+  width: 100px;
+  height: 100%;
+  animation: shimmer 1.5s infinite linear;
+}
