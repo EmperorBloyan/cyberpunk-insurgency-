@@ -9,6 +9,10 @@ import {
 import { MagicBlockQueue } from "../engine/MagicBlockQueue";
 import { gameWorldGet } from "./gameWorld";
 
+/**
+ * Sends a tactical command to the Ephemeral Rollup.
+ * Handles troop movement and combat logic.
+ */
 export async function gameSystemCommand(
   queue: MagicBlockQueue,
   entityPda: PublicKey,
@@ -20,6 +24,14 @@ export async function gameSystemCommand(
   strengthPercent: number
 ) {
   const worldPda = gameWorldGet();
+
+  // 1. Validation: Don't waste CU (Compute Units) on stationary moves
+  if (sourceX === targetX && sourceY === targetY) {
+    console.warn("COMMAND_ABORTED: Source and target coordinates are identical.");
+    return;
+  }
+
+  // 2. Build the BOLT System Application
   const applySystem = await ApplySystem({
     authority: queue.getSessionPayer(),
     systemId: SYSTEM_COMMAND_PROGRAM_ID,
@@ -34,6 +46,7 @@ export async function gameSystemCommand(
         ],
       },
     ],
+    // CRITICAL: These keys MUST match the Rust 'pub fn execute' arguments exactly
     args: {
       player_index: playerIndex,
       source_x: sourceX,
@@ -44,34 +57,18 @@ export async function gameSystemCommand(
     },
   });
 
-  console.log(
-    "gameSystemCommand.queued:",
-    sourceX + "x" + sourceY,
-    "->",
-    targetX + "x" + targetY
-  );
+  // 3. Queue the transaction for the Ephemeral Layer
+  // We use the queue here because games involve rapid-fire clicks
+  const txName = `Move: [${sourceX},${sourceY}] -> [${targetX},${targetY}]`;
+  
+  console.log(`[TACTICAL_UPLINK]: Queuing ${txName}`);
 
-  const dudu = await queue.processSessionEphemTransaction(
-    "SystemCommand:" +
-      playerIndex +
-      " (" +
-      sourceX +
-      "x" +
-      sourceY +
-      "->" +
-      targetX +
-      "x" +
-      targetY +
-      ")",
+  const result = await queue.processSessionEphemTransaction(
+    txName,
     applySystem.transaction
   );
 
-  console.log(
-    "gameSystemCommand.awaited:",
-    sourceX + "x" + sourceY,
-    "->",
-    targetX + "x" + targetY
-  );
+  console.log(`[TACTICAL_ACK]: ${txName} processed by rollup.`);
 
-  return dudu;
+  return result;
 }
