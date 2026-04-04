@@ -32,7 +32,7 @@ export function PagePlay() {
     }
   }, [params.id]);
 
-  // 2. Real-time Listener for the Shadow Arena State
+  // 2. Real-time Listener for the Web War I State
   const [game, setGame] = React.useState<any>(undefined);
   
   React.useEffect(() => {
@@ -41,11 +41,11 @@ export function PagePlay() {
     }
   }, [engine, entityPda, gamePda]);
 
-  // Error State: Invalid Arena ID
+  // Error State: Invalid Warzone ID
   if (!entityPda) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black">
-        <GameError message="INVALID ARENA COORDINATES" />
+        <GameError message="INVALID THEATER COORDINATES" />
       </div>
     );
   }
@@ -54,41 +54,51 @@ export function PagePlay() {
   if (game === null) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black">
-        <GameError message="CONNECTION LOST: SHADOW ARENA UNREACHABLE" />
+        <GameError message="SIGNAL INTERRUPTED: NEURAL LINK SEVERED" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen bg-slate-950 p-4 md:p-8 overflow-hidden">
+    <div className="flex flex-col items-center justify-start min-h-screen bg-slate-950 p-4 md:p-8 overflow-hidden selection:bg-red-600">
       
       {/* Visual Header Decoration */}
-      <div className="w-full max-w-4xl flex justify-between items-center mb-8 border-b border-slate-800 pb-4">
+      <div className="w-full max-w-5xl flex justify-between items-center mb-8 border-b border-zinc-800 pb-6">
         <div>
-          <h1 className="text-3xl font-black italic text-white tracking-tighter">
-            BLITZ <span className="text-red-600">BRAWLER</span>
+          <h1 className="text-4xl font-black italic text-white tracking-tighter">
+            WEB <span className="text-red-600">WAR I</span>
           </h1>
-          <p className="text-[10px] text-slate-500 font-mono uppercase tracking-[0.3em]">
-            Instance: {entityPda.toBase58().slice(0, 16)}...
+          <p className="text-[9px] text-zinc-500 font-mono uppercase tracking-[0.4em] mt-1">
+            Sector_UID: {entityPda.toBase58().slice(0, 16)}...
           </p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-6 items-center">
+           <div className="hidden md:block text-right border-r border-zinc-800 pr-6">
+             <p className="text-[9px] text-red-500 font-black uppercase tracking-widest">Ghost Division</p>
+             <p className="text-[11px] text-zinc-400 font-mono">NEURAL_SYNC_STABLE</p>
+           </div>
            <div className="text-right">
-             <p className="text-[9px] text-blue-400 font-bold uppercase">Shadow Engine</p>
-             <p className="text-[11px] text-slate-400 font-mono italic">ACTIVE</p>
+             <p className="text-[9px] text-blue-500 font-black uppercase tracking-widest">Ephemeral Node</p>
+             <p className="text-[11px] text-green-500 font-mono animate-pulse">CONNECTED</p>
            </div>
         </div>
       </div>
 
       {/* Main Game Controller Rendering Logic */}
-      <div className="w-full max-w-4xl flex flex-col items-center">
+      <div className="w-full max-w-5xl flex flex-col items-center">
         {(() => {
           // Loading Phase
           if (game === undefined) {
             return (
-              <div className="flex flex-col items-center mt-20">
-                <div className="w-12 h-12 border-4 border-slate-800 border-t-red-600 rounded-full animate-spin mb-4" />
-                <Text value="REHYDRATING ARENA STATE..." />
+              <div className="flex flex-col items-center mt-32">
+                <div className="relative w-16 h-16">
+                  <div className="absolute inset-0 border-4 border-zinc-900 rounded-full" />
+                  <div className="absolute inset-0 border-4 border-t-red-600 rounded-full animate-spin" />
+                </div>
+                <div className="mt-6 text-center">
+                  <Text value="REHYDRATING COMBAT INTEL..." />
+                  <p className="text-[10px] text-zinc-600 font-mono mt-2 animate-pulse">Establishing Rollup Session...</p>
+                </div>
               </div>
             );
           }
@@ -96,7 +106,7 @@ export function PagePlay() {
           // Lobby / Generation Phase
           if (game.status.generate || game.status.lobby) {
             return (
-              <div className="w-full animate-in fade-in zoom-in duration-500">
+              <div className="w-full animate-in fade-in zoom-in duration-700">
                 <GameLobbyRoot
                   entityPda={entityPda}
                   gamePda={gamePda}
@@ -109,7 +119,7 @@ export function PagePlay() {
           // Playing / Finished Phase
           if (game.status.playing || game.status.finished) {
             return (
-              <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="w-full animate-in fade-in slide-in-from-bottom-6 duration-700">
                 <GamePlayRoot 
                   entityPda={entityPda} 
                   gamePda={gamePda} 
@@ -119,12 +129,13 @@ export function PagePlay() {
             );
           }
 
-          return <Text value="FATAL ERROR: UNKNOWN ARENA DIMENSION" />;
+          return <GameError message="CRITICAL_EXCEPTION: THEATER_DIMENSION_COLLAPSE" />;
         })()}
       </div>
 
-      {/* Background Ambience (Scanlines) */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-[100] bg-[length:100%_2px,3px_100%]" />
+      {/* Background Ambience (Scanlines & Noise) */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.04] z-[100] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]" />
+      <div className="fixed inset-0 pointer-events-none bg-black opacity-[0.02] mix-blend-overlay z-[99]" />
     </div>
   );
 }
