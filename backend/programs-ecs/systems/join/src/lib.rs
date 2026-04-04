@@ -1,47 +1,57 @@
 use bolt_lang::*;
-use crate::*;
+use game::Game;
+use game::GameStatus;
+use game::GameError;
+use game::Player;
 
 declare_id!("3zMXokc8DYYAairrtAKZKPJZKHmWKRdj6G8bm8ZZVi9g");
 
 #[system]
-pub struct Join {
-    pub fn execute(ctx: Context<Components>, player_index: u8, join: bool) -> Result<()> {
+pub mod join {
+    pub fn execute(ctx: Context<Components>, player_index: u8, join: bool) -> Result<Components> {
         let game = &mut ctx.accounts.game;
         let payer = ctx.accounts.authority.key();
 
-        // 1. Status Check: Can only modify players while in the Lobby
+        // 1. Status Check: Must be in Lobby to change players
         if game.status != GameStatus::Lobby {
-            return Err(GameError::StatusIsNotPlaying.into()); 
+            return Err(GameError::StatusIsNotLobby.into()); 
+        }
+
+        // Safety check for array bounds
+        if player_index >= 2 {
+            return Err(GameError::InvalidStep.into());
         }
 
         let player = &mut game.players[player_index as usize];
 
         // 2. Join Logic
         if join {
-            if player.ready {
-                return Err(GameError::ActionTooFast.into()); // Player already joined
+            // Check if slot is already taken by someone else
+            if player.authority != Pubkey::default() && player.authority != payer {
+                return Err(GameError::PlayerAlreadyJoined.into());
             }
+            
             player.authority = payer;
             player.ready = true;
             player.health = 100;
             player.attack_power = 10;
+            player.last_action_slot = Clock::get()?.slot;
         } 
         // 3. Leave Logic
         else {
             if player.authority != payer {
-                return Err(GameError::ActionTooFast.into()); // Not your slot
+                return Err(GameError::PlayerIsNotPayer.into());
             }
             player.authority = Pubkey::default();
             player.ready = false;
         }
 
-        Ok(())
+        Ok(ctx.accounts)
     }
-}
 
-#[derive(Accounts)]
-pub struct Components<'info> {
-    #[account(mut)]
-    pub game: Account<'info, Game>,
-    pub authority: Signer<'info>,
+    #[system_input]
+    pub struct Components {
+        pub game: Game,
+        pub authority: Signer,
+    }
 }
