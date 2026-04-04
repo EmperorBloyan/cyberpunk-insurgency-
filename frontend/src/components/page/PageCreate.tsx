@@ -19,12 +19,12 @@ export function PageCreate() {
   React.useEffect(() => {
     let lastLogs: string[] = [];
     
-    // Updated flavor text for Web War I
+    // Updated flavor text for Cyberpunk Insurgency
     const customOnLog = (log: string) => {
         let flavoredLog = log;
-        if (log.includes("Creating")) flavoredLog = "📡 ESTABLISHING NEURAL UPLINK...";
-        if (log.includes("PDA")) flavoredLog = "🔑 SECURING WARZONE COORDINATES...";
-        if (log.includes("Success")) flavoredLog = "⚔️ BATTLEFIELD STABILIZED. PREPARE FOR WEB WAR I.";
+        if (log.includes("Creating")) flavoredLog = "📡 INITIATING NEURAL HANDSHAKE...";
+        if (log.includes("PDA")) flavoredLog = "🔑 ENCRYPTING NODE COORDINATES...";
+        if (log.includes("Success")) flavoredLog = "⚔️ UPLINK STABLE. INSURGENCY COMMENCING.";
         
         lastLogs = [...lastLogs, flavoredLog];
         setLogs(lastLogs);
@@ -42,52 +42,53 @@ export function PageCreate() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black p-6">
+      <div className="flex items-center justify-center min-h-screen bg-[#050505] p-6">
         <GameError message={error} />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white p-8">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#050505] text-white p-8 selection:bg-cyan-900/50">
+      
       {/* Header with Pulse Animation */}
       <div className="mb-12 text-center">
-        <h1 className="text-5xl font-black italic tracking-tighter text-red-600 animate-pulse">
-          DEPLOYING FRONT-LINE
+        <h1 className="text-5xl font-black tracking-tighter text-cyan-500 animate-pulse uppercase">
+          Syncing Neural Link
         </h1>
-        <div className="h-1 w-32 bg-red-600 mx-auto mt-2 shadow-[0_0_15px_#dc2626]" />
+        <div className="h-[2px] w-48 bg-cyan-500 mx-auto mt-4 shadow-[0_0_20px_rgba(6,182,212,0.6)]" />
       </div>
 
       <div className="w-full max-w-lg space-y-4 mb-12 text-center opacity-80">
-        <p className="text-slate-400 font-mono text-xs uppercase tracking-widest">
-            Protocol: WEB WAR I // Neural Link v1.0
+        <p className="text-zinc-500 font-mono text-[10px] uppercase tracking-[0.5em]">
+            PROTOCOL: CYBERPUNK INSURGENCY // V.1.0.4
         </p>
-        <p className="text-blue-400 font-bold uppercase text-sm tracking-tight">
-            Syncing Combat Data with Ephemeral Rollup...
+        <p className="text-zinc-400 font-bold uppercase text-xs tracking-widest">
+            Bridging Node State with Ephemeral Rollup...
         </p>
       </div>
 
       {/* Terminal Style Log Window */}
-      <div className="w-full max-w-xl bg-black border border-slate-800 rounded-lg overflow-hidden shadow-2xl">
-        <div className="bg-slate-900 px-4 py-2 flex items-center gap-2 border-b border-slate-800">
-            <div className="flex gap-1">
-                <div className="w-2 h-2 rounded-full bg-red-500" />
-                <div className="w-2 h-2 rounded-full bg-yellow-500" />
-                <div className="w-2 h-2 rounded-full bg-green-500" />
+      <div className="w-full max-w-xl bg-black border border-zinc-900 rounded-sm overflow-hidden shadow-2xl">
+        <div className="bg-zinc-900/50 px-4 py-3 flex items-center gap-3 border-b border-zinc-900">
+            <div className="flex gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-zinc-800" />
+                <div className="w-2.5 h-2.5 rounded-full bg-zinc-800" />
+                <div className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse" />
             </div>
-            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-tighter">Combat_Deployment_Logs</span>
+            <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">Incursion_Log_Stream</span>
         </div>
         
-        <div className="p-6 font-mono text-sm space-y-3 min-h-[200px]">
+        <div className="p-8 font-mono text-xs space-y-4 min-h-[220px]">
           {logs.length === 0 && (
-            <div className="text-slate-700 animate-pulse">Awaiting handshake with Solana Validator...</div>
+            <div className="text-zinc-800 animate-pulse italic">Awaiting validator response...</div>
           )}
           <ForEach
             values={logs}
             renderer={(log, index) => (
-              <div key={index} className="flex gap-3 items-start animate-in fade-in slide-in-from-left-2 duration-300">
-                <span className="text-slate-600">[{index + 1}]</span>
-                <span className={index === logs.length - 1 ? "text-green-400 font-bold" : "text-slate-300"}>
+              <div key={index} className="flex gap-4 items-start animate-in fade-in slide-in-from-left-2 duration-400">
+                <span className="text-zinc-700">[{index + 1}]</span>
+                <span className={index === logs.length - 1 ? "text-cyan-400 font-bold tracking-tight" : "text-zinc-400"}>
                     {log}
                 </span>
               </div>
@@ -96,10 +97,10 @@ export function PageCreate() {
         </div>
       </div>
 
-      <div className="mt-8">
-        <div className="flex items-center gap-2 text-slate-600 text-[10px] uppercase font-bold tracking-[0.2em]">
-            <div className="w-4 h-4 border-2 border-slate-700 border-t-red-600 rounded-full animate-spin" />
-            Verifying Blockchain Entropy
+      <div className="mt-12">
+        <div className="flex items-center gap-4 text-zinc-600 text-[10px] uppercase font-bold tracking-[0.3em]">
+            <div className="w-5 h-5 border border-zinc-800 border-t-cyan-500 rounded-full animate-spin" />
+            Verifying Node Entropy
         </div>
       </div>
     </div>
@@ -117,12 +118,12 @@ function scheduleCreate(
       const entityPda = await gameCreate(engine, onLog);
       const code = entityPda.toBase58();
       
-      // Delay navigation so the user can feel the "Deployment" completion
-      setTimeout(() => navigate("/play/" + code), 1200);
+      // Delay navigation to let the "Success" log linger for immersion
+      setTimeout(() => navigate("/play/" + code), 1500);
       
     } catch (error) {
       console.error("create-error", error);
-      onError("SIGNAL_LOST: Could not manifest the Web War I theater.");
+      onError("SIGNAL_LOST: NODE_MANIFEST_FAILURE");
     }
   }, 500);
 
