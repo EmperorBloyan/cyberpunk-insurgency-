@@ -1,0 +1,30 @@
+.PowerUpNotification {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  pointer-events: none;
+
+  .Toast {
+    background: rgba(0, 255, 157, 0.9); // Neon Green
+    color: black;
+    padding: 10px 20px;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    text-transform: uppercase;
+    clip-path: polygon(10% 0%, 100% 0%, 90% 100%, 0% 100%); // Cyberpunk slant
+    animation: slide-up-fade 1s forwards;
+    
+    &.Attack {
+      background: #fbbf24; // Amber for Attack
+    }
+  }
+}
+
+@keyframes slide-up-fade {
+  0% { transform: translateY(20px); opacity: 0; }
+  20% { transform: translateY(0); opacity: 1; }
+  80% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-40px); opacity: 0; }
+}
