@@ -1,7 +1,24 @@
 use bolt_lang::*;
 
-// Use this valid Solana Public Key for your Game Component
+// Using the valid Solana Public Key for the Component
 declare_id!("EHZHVN8JjFdVJ7Ps3e6fX9kzQQDo7u8VT3mL5X4p9n7e");
+
+// ---------------------------------------------------------
+// 1. GLOBAL COMPONENTS (The "Ghost" / Persistent Feature)
+// ---------------------------------------------------------
+
+#[component]
+pub struct ChampionShadow {
+    pub authority: Pubkey,
+    pub moves: [u8; 256],      // Recorded sequence of winning moves
+    pub total_moves: u32,
+    pub win_count: u32,
+    pub timestamp: i64,
+}
+
+// ---------------------------------------------------------
+// 2. MATCH COMPONENTS (The Game State)
+// ---------------------------------------------------------
 
 #[component]
 #[derive(Copy)]
@@ -35,7 +52,7 @@ pub struct GameCell {
     pub kind: GameCellKind,
     pub owner: GameCellOwner,
     pub strength: u8,
-    pub occupant: u8,
+    pub occupant: u8, // 0: None, 1: Health, 2: Attack
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq)]
@@ -48,9 +65,7 @@ pub enum GameCellKind {
 }
 
 impl Default for GameCellKind {
-    fn default() -> Self {
-        GameCellKind::Field
-    }
+    fn default() -> Self { GameCellKind::Field }
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq)]
@@ -60,12 +75,13 @@ pub enum GameCellOwner {
 }
 
 impl Default for GameCellOwner {
-    fn default() -> Self {
-        GameCellOwner::Nobody
-    }
+    fn default() -> Self { GameCellOwner::Nobody }
 }
 
-// Helper methods for the systems to use
+// ---------------------------------------------------------
+// 3. HELPERS & ERRORS
+// ---------------------------------------------------------
+
 impl Game {
     pub fn get_cell(&self, x: u8, y: u8) -> Result<&GameCell> {
         let index = (y as usize) * (self.size_x as usize) + (x as usize);
@@ -87,4 +103,8 @@ pub enum GameError {
     ActionTooFast,
     #[msg("Invalid grid movement.")]
     InvalidStep,
+    #[msg("Player already joined the session.")]
+    PlayerAlreadyJoined,
+    #[msg("This slot is not owned by the caller.")]
+    PlayerIsNotPayer,
 }
