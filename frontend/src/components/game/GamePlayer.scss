@@ -1,16 +1,87 @@
 .GamePlayer {
-  flex-grow: 1;
-  justify-content: start;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+  min-height: 140px;
 
-  padding: 0px 4px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  // 1. The "Muscular" Glow Effect
+  // Adds a subtle internal radiance to the character card
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
 
-  color: white;
-
+  // 2. Neon "Living Brawler" Styling (Player 0)
   &.P0 {
-    background-color: rgba(0, 0, 255, 0.3);
+    box-shadow: inset 0 0 20px rgba(0, 255, 157, 0.05);
+    &:hover {
+      box-shadow: inset 0 0 30px rgba(0, 255, 157, 0.15);
+      border-color: #00ff9d;
+    }
   }
+
+  // 3. Ghost/Shadow Styling (Player 1)
   &.P1 {
-    background-color: rgba(255, 0, 0, 0.3);
+    animation: ghost-pulse 6s ease-in-out infinite;
+    
+    // The "Interlaced" Scanline for the Ghost
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        rgba(18, 16, 16, 0) 50%, 
+        rgba(0, 0, 0, 0.1) 50%
+      );
+      background-size: 100% 4px;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .Text {
+      text-shadow: 0 0 10px rgba(96, 165, 250, 0.6);
+    }
   }
+}
+
+// 4. Animations
+
+// Subtle floating for the Ghost
+@keyframes ghost-pulse {
+  0%, 100% { 
+    transform: translateY(0); 
+    filter: brightness(1) contrast(1); 
+  }
+  50% { 
+    transform: translateY(-4px); 
+    filter: brightness(1.1) contrast(1.1); 
+  }
+}
+
+// The "Vitals" Shimmer Effect (used in the health bar)
+@keyframes shimmer {
+  0% { transform: translateX(-100%) skewX(-15deg); }
+  100% { transform: translateX(200%) skewX(-15deg); }
+}
+
+.health-bar-shimmer {
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: shimmer 2s infinite linear;
+}
+
+// 5. Build/Style Overlays
+.muscular-overlay {
+    opacity: 0.15;
+    filter: blur(20px);
+    background: radial-gradient(ellipse at center, white 0%, transparent 70%);
 }
