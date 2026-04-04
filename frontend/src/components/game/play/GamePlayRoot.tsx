@@ -1,3 +1,4 @@
+import "./GamePlayRoot.scss";
 import * as React from "react";
 import { GameView } from "./GameView";
 import { ActionPanel } from "./ActionPanel";
