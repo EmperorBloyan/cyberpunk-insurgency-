@@ -1,0 +1,31 @@
+[project]
+name = "cyberpunk_insurgency"
+version = "0.1.0"
+
+[build]
+solana_version = "1.18"
+
+# The Anchor for your entire Game Universe
+[world]
+id = "JBupPMmv4zaXa5c8EdubsCPvoHZwCK7mwnDfmfs8dC5Y"
+
+# --- Systems Mapping ---
+# These must match the 'declare_id!' in your Rust code and your frontend 'gamePrograms.ts'
+
+[systems.generate]
+id = "C5iL81s4Fu6SnkQEfixFZpKPRQ32fqVizpotoLVTxA2n"
+
+[systems.join]
+id = "3zMXokc8DYYAairrtAKZKPJZKHmWKRdj6G8bm8ZZVi9g"
+
+[systems.start]
+id = "Cu8JkUA9a5msGWNChAuhBJ9PTE6FdevwHNgPyxbABkUL"
+
+[systems.command]
+id = "YGKbhp7S1cCvvheyQ8rcuECKUR1SVpKpHjnqCqdP1cm"
+
+[systems.tick]
+id = "8tKAapRKPrNkxXwcArbSAnBHieYnX6M2WoTxukbCQtTa"
+
+[systems.finish]
+id = "HBdGPJycpHjjJ149T3RQGtQWjSC39MVpcKYF6JJvaF6e"
