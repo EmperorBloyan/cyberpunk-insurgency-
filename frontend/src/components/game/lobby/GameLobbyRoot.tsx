@@ -33,7 +33,13 @@ export function GameLobbyRoot({
 
   return (
     <>
-      <div style={{ border: "2px solid rgba(255, 255, 255, 0.3)" }}>
+      <Text value="Blitz Brawler: Shadow Arena" isTitle={true} />
+      <Text value="⚔️ You are about to enter the arena" />
+      <Text value="Your opponent: The Ghost of the previous champion" />
+      <Text value="Every move they make was recorded onchain from a real player" />
+      <Text value="Beat the Ghost → Become the new Shadow for the next challenger" />
+
+      <div style={{ border: "2px solid rgba(255, 255, 255, 0.3)", margin: "20px 0" }}>
         <ForEach
           values={game.players}
           renderer={(player, index) => (
@@ -46,7 +52,8 @@ export function GameLobbyRoot({
           )}
         />
       </div>
-      <Text value="Map Preview" />
+
+      <Text value="Map Preview - Shrinking Poison Ring Arena" />
       <GameGridRows game={game} />
     </>
   );
