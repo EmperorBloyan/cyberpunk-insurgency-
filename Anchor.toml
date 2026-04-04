@@ -1,0 +1,10 @@
+echo '[programs.localnet]
+movement = "HE8f4rE5s1oW4tS2vE1rS8iOn1D"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "Localnet"
+wallet = "~/.config/solana/id.json"
+' > Anchor.toml
