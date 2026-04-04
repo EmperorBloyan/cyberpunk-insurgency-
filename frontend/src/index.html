@@ -1,12 +1,52 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <title>MagicBlock Labs</title>
-        <meta name="viewport" 
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+        
+        <title>CYBERPUNK INSURGENCY | NEURAL_LINK_v1.0</title>
+        <meta name="description" content="Sub-second tactical brawling on the Solana Ephemeral Rollup." />
+        
+        <meta name="theme-color" content="#050505" />
+
+        <style>
+            html, body {
+                margin: 0;
+                padding: 0;
+                background-color: #050505 !important;
+                color: #06b6d4;
+                overflow: hidden; /* Prevents scroll bounce on mobile */
+                height: 100%;
+                width: 100%;
+            }
+
+            #app {
+                background-color: #050505;
+                min-height: 100vh;
+            }
+
+            /* Optional: Simple CSS Loader so users don't see a blank screen */
+            .initial-loading {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-family: monospace;
+                letter-spacing: 0.5em;
+                text-transform: uppercase;
+                font-size: 10px;
+                animation: pulse 1.5s infinite;
+            }
+
+            @keyframes pulse {
+                0%, 100% { opacity: 0.3; }
+                50% { opacity: 1; }
+            }
+        </style>
     </head>
     <body>
-        <div id="app"></div>
+        <div id="app">
+            <div class="initial-loading">Establishing_Neural_Link...</div>
+        </div>
     </body>
 </html>
