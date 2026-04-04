@@ -1,5 +1,8 @@
 use bolt_lang::*;
 
+// 1. REGISTER THE SYSTEM MODULE
+pub mod powerup_spawn;
+
 declare_id!("C5iL81s4Fu6SnkQEfixFZpKPRQ32fqVizpotoLVTxA2n");
 
 #[component(delegate)]
@@ -8,8 +11,8 @@ pub struct Game {
     pub size_x: u8,
     pub size_y: u8,
     pub players: [GamePlayer; 2],
-    pub cells: [GameCell; 128], // max grid size is 16x8=128
-    pub tick_next_slot: u64,    // TODO(vbrunet) - use more precise clock
+    pub cells: [GameCell; 128], 
+    pub tick_next_slot: u64,    
 }
 
 #[component_deserialize]
@@ -29,12 +32,14 @@ pub struct GamePlayer {
     pub last_action_slot: u64,
 }
 
+// 2. MERGED GAME CELL (Including Loot & Player logic)
 #[component_deserialize]
 #[derive(PartialEq)]
 pub struct GameCell {
     pub kind: GameCellKind,
     pub owner: GameCellOwner,
     pub strength: u8,
+    pub occupant: Option<u8>, // 0 for Health, 1 for Attack (Loot)
 }
 
 #[component_deserialize]
@@ -54,6 +59,13 @@ pub enum GameCellOwner {
     Nobody,
 }
 
+#[component_deserialize]
+#[derive(PartialEq, Default)]
+pub struct PowerUp {
+    pub p_type: u8, 
+    pub value: u64,
+}
+
 /**
  * The initial state of the component when initialized
  */
@@ -70,9 +82,6 @@ impl Default for Game {
     }
 }
 
-/**
- * Utility functions to manipulate the game's cells
- */
 impl Game {
     pub fn compute_index(&self, x: u8, y: u8) -> Result<usize> {
         if x >= self.size_x || y >= self.size_y {
@@ -89,15 +98,13 @@ impl Game {
     }
 }
 
-/**
- * Utility functions for standard cell types
- */
 impl GameCell {
     pub fn field() -> GameCell {
         GameCell {
             kind: GameCellKind::Field,
             owner: GameCellOwner::Nobody,
             strength: 0,
+            occupant: None, // Initialized as empty
         }
     }
     pub fn city() -> GameCell {
@@ -105,6 +112,7 @@ impl GameCell {
             kind: GameCellKind::City,
             owner: GameCellOwner::Nobody,
             strength: 40,
+            occupant: None,
         }
     }
     pub fn capital(player_slot: u8) -> GameCell {
@@ -112,6 +120,7 @@ impl GameCell {
             kind: GameCellKind::Capital,
             owner: GameCellOwner::Player(player_slot),
             strength: 20,
+            occupant: None,
         }
     }
     pub fn mountain() -> GameCell {
@@ -119,6 +128,7 @@ impl GameCell {
             kind: GameCellKind::Mountain,
             owner: GameCellOwner::Nobody,
             strength: 0,
+            occupant: None,
         }
     }
     pub fn forest() -> GameCell {
@@ -126,6 +136,7 @@ impl GameCell {
             kind: GameCellKind::Forest,
             owner: GameCellOwner::Nobody,
             strength: 0,
+            occupant: None,
         }
     }
 }
@@ -155,17 +166,3 @@ pub enum GameError {
     #[msg("The cell cannot be interacted with")]
     CellIsNotWalkable,
 }
-#[component_deserialize]
-#[derive(PartialEq, Default)]
-pub struct PowerUp {
-    pub p_type: u8, // 0 for Health, 1 for Attack
-    pub value: u64,
-}
-
-#[component_deserialize]
-#[derive(PartialEq, Default)]
-pub struct GameCell {
-    pub occupant: Option<u8>, // Using u8 to represent if a powerup is here
-    pub player: Option<u8>,
-}
-
