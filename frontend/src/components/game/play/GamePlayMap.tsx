@@ -1,4 +1,5 @@
 import * as React from "react";
+import "./GamePlayMap.scss";
 import { PublicKey } from "@solana/web3.js";
 import { useMagicBlockEngine } from "../../../engine/MagicBlockEngineProvider";
 import { MagicBlockQueue } from "../../../engine/MagicBlockQueue";
