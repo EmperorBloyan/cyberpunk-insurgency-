@@ -32,7 +32,7 @@ export function PagePlay() {
     }
   }, [params.id]);
 
-  // 2. Real-time Listener for the Web War I State
+  // 2. Real-time Listener for the Cyberpunk Insurgency State
   const [game, setGame] = React.useState<any>(undefined);
   
   React.useEffect(() => {
@@ -41,11 +41,11 @@ export function PagePlay() {
     }
   }, [engine, entityPda, gamePda]);
 
-  // Error State: Invalid Warzone ID
+  // Error State: Invalid Node ID
   if (!entityPda) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black">
-        <GameError message="INVALID THEATER COORDINATES" />
+      <div className="flex items-center justify-center min-h-screen bg-[#050505]">
+        <GameError message="INVALID_NODE_COORDINATES" />
       </div>
     );
   }
@@ -53,60 +53,62 @@ export function PagePlay() {
   // Error State: Fetch Failure
   if (game === null) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black">
-        <GameError message="SIGNAL INTERRUPTED: NEURAL LINK SEVERED" />
+      <div className="flex items-center justify-center min-h-screen bg-[#050505]">
+        <GameError message="SIGNAL_LOSS: NEURAL_LINK_SEVERED" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen bg-slate-950 p-4 md:p-8 overflow-hidden selection:bg-red-600">
+    <div className="flex flex-col items-center justify-start min-h-screen bg-[#050505] p-4 md:p-8 overflow-hidden selection:bg-cyan-900/50">
       
-      {/* Visual Header Decoration */}
-      <div className="w-full max-w-5xl flex justify-between items-center mb-8 border-b border-zinc-800 pb-6">
+      {/* Visual Header Decoration: The Cyberpunk Terminal */}
+      <div className="w-full max-w-5xl flex justify-between items-end mb-10 border-b border-zinc-900 pb-8">
         <div>
-          <h1 className="text-4xl font-black italic text-white tracking-tighter">
-            WEB <span className="text-red-600">WAR I</span>
+          <h1 className="text-3xl font-black text-white tracking-tighter uppercase">
+            CYBERPUNK <span className="text-cyan-500">INSURGENCY</span>
           </h1>
-          <p className="text-[9px] text-zinc-500 font-mono uppercase tracking-[0.4em] mt-1">
-            Sector_UID: {entityPda.toBase58().slice(0, 16)}...
+          <p className="text-[10px] text-zinc-600 font-mono uppercase tracking-[0.5em] mt-2">
+            ACTIVE_SECTOR_UPLINK: {entityPda.toBase58().slice(0, 8)}...{entityPda.toBase58().slice(-8)}
           </p>
         </div>
-        <div className="flex gap-6 items-center">
-           <div className="hidden md:block text-right border-r border-zinc-800 pr-6">
-             <p className="text-[9px] text-red-500 font-black uppercase tracking-widest">Ghost Division</p>
-             <p className="text-[11px] text-zinc-400 font-mono">NEURAL_SYNC_STABLE</p>
+        
+        <div className="flex gap-10 items-center">
+           <div className="hidden lg:block text-right border-r border-zinc-900 pr-8">
+             <p className="text-[9px] text-cyan-600 font-black uppercase tracking-widest">Protocol</p>
+             <p className="text-[11px] text-zinc-400 font-mono">GHOST_RECORD_SYNC</p>
            </div>
            <div className="text-right">
-             <p className="text-[9px] text-blue-500 font-black uppercase tracking-widest">Ephemeral Node</p>
-             <p className="text-[11px] text-green-500 font-mono animate-pulse">CONNECTED</p>
+             <p className="text-[9px] text-emerald-500 font-black uppercase tracking-widest animate-pulse">● System_Live</p>
+             <p className="text-[11px] text-zinc-500 font-mono uppercase">EPHEMERAL_ROLLUP_STABLE</p>
            </div>
         </div>
       </div>
 
-      {/* Main Game Controller Rendering Logic */}
+      {/* Main Game Interface Logic */}
       <div className="w-full max-w-5xl flex flex-col items-center">
         {(() => {
-          // Loading Phase
+          // Loading Phase: Rehydrating Intent
           if (game === undefined) {
             return (
               <div className="flex flex-col items-center mt-32">
-                <div className="relative w-16 h-16">
-                  <div className="absolute inset-0 border-4 border-zinc-900 rounded-full" />
-                  <div className="absolute inset-0 border-4 border-t-red-600 rounded-full animate-spin" />
+                <div className="relative w-20 h-20">
+                  <div className="absolute inset-0 border-2 border-zinc-900 rounded-full" />
+                  <div className="absolute inset-0 border-2 border-t-cyan-500 rounded-full animate-spin" />
+                  <div className="absolute inset-4 border border-zinc-800 rounded-full animate-pulse" />
                 </div>
-                <div className="mt-6 text-center">
-                  <Text value="REHYDRATING COMBAT INTEL..." />
-                  <p className="text-[10px] text-zinc-600 font-mono mt-2 animate-pulse">Establishing Rollup Session...</p>
+                <div className="mt-8 text-center">
+                  <Text value="ARCHIVING_NEURAL_INTENT..." />
+                  <p className="text-[10px] text-zinc-600 font-mono mt-3 animate-pulse uppercase tracking-widest">Bridging_Node_State...</p>
                 </div>
               </div>
             );
           }
 
-          // Lobby / Generation Phase
+          // Lobby / Neural Prep Phase
           if (game.status.generate || game.status.lobby) {
             return (
-              <div className="w-full animate-in fade-in zoom-in duration-700">
+              <div className="w-full animate-in fade-in zoom-in duration-500">
                 <GameLobbyRoot
                   entityPda={entityPda}
                   gamePda={gamePda}
@@ -116,10 +118,10 @@ export function PagePlay() {
             );
           }
 
-          // Playing / Finished Phase
+          // Combat / Archive Phase
           if (game.status.playing || game.status.finished) {
             return (
-              <div className="w-full animate-in fade-in slide-in-from-bottom-6 duration-700">
+              <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <GamePlayRoot 
                   entityPda={entityPda} 
                   gamePda={gamePda} 
@@ -129,13 +131,13 @@ export function PagePlay() {
             );
           }
 
-          return <GameError message="CRITICAL_EXCEPTION: THEATER_DIMENSION_COLLAPSE" />;
+          return <GameError message="CRITICAL_EXCEPTION: NODE_MEMORY_CORRUPTION" />;
         })()}
       </div>
 
-      {/* Background Ambience (Scanlines & Noise) */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.04] z-[100] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]" />
-      <div className="fixed inset-0 pointer-events-none bg-black opacity-[0.02] mix-blend-overlay z-[99]" />
+      {/* Tactical Background Overlays */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-[100] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(6,182,212,0.06),rgba(0,255,0,0.02),rgba(220,38,38,0.06))] bg-[length:100%_2px,3px_100%]" />
+      <div className="fixed inset-0 pointer-events-none bg-cyan-500 opacity-[0.01] mix-blend-overlay z-[99]" />
     </div>
   );
 }
