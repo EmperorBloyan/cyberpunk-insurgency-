@@ -86,8 +86,9 @@ pub mod command {
         Ok(ctx.accounts)
     }
 
-    #[system_input]
+           #[system_input]
     pub struct Components {
         pub game: Game,
+        pub authority: Signer,
     }
 }
