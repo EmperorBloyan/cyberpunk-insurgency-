@@ -6,12 +6,13 @@ version = "0.1.0"
 id = "EHZHVN8JjFdVJ7Ps3e6fX9kzQQDo7u8VT3mL5X4p9n7e"
 
 # --- Systems Mapping ---
+# These must match the 'declare_id!' in your Rust code
 
 [system.generate]
 id = "C5iL81s4Fu6SnkQEfixFZpKPRQ32fqVizpotoLVTxA2n"
 
 [system.join]
-id = "AddressFromYourJoinSystem1111111111" # Update this to your Join system's ID
+id = "3zMXokc8DYYAairrtAKZKPJZKHmWKRdj6G8bm8ZZVi9g"
 
 [system.start]
 id = "Cu8JkUA9a5msGWNChAuhBJ9PTE6FdevwHNgPyxbABkUL"
@@ -23,4 +24,4 @@ id = "YGKbhp7S1cCvvheyQ8rcuECKUR1SVpKpHjnqCqdP1cm"
 id = "HBdGPJycpHjjJ149T3RQGtQWjSC39MVpcKYF6JJvaF6e"
 
 [system.tick]
-id = "YourTickSystemAddress11111111111" # Update this to your Tick system's ID
+id = "8tKAapRKPrNkxXwcArbSAnBHieYnX6M2WoTxukbCQtTa"
