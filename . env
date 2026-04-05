@@ -2,7 +2,7 @@
 # Local Validator (Default for development)
 NEXT_PUBLIC_RPC_URL=http://127.0.0.1:8899
 NEXT_PUBLIC_WSS_URL=ws://127.0.0.1:8900
-
+NEXT_PUBLIC_WORLD_ID="JBupPMmv4zaXa5c8EdubsCPvoHZwCK7mwnDfmfs8dC5Y"
 # MagicBlock Ephemeral Rollup Endpoint (High-speed layer)
 NEXT_PUBLIC_EPHEMERAL_RPC_URL=https://devnet.magicblock.app
 
