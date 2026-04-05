@@ -83,7 +83,7 @@ pub mod command {
         // Update player cooldown
         player.last_action_slot = Clock::get()?.slot;
 
-                Ok(ctx.accounts)
+       Ok(ctx.accounts)  // ✅ Correct indentation
     }
 
     #[system_input]
